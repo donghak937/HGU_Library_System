@@ -51,7 +51,7 @@
 
         /*상단 회원명*/
         #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        #toast { position: fixed; top: 70px; right: 24px; ... }
+        #toast { position: fixed; top: 70px; right: 24px;}
     </style>
 </head>
 <body>
@@ -90,8 +90,25 @@
 </div>
 
 <script>
-    const CURRENT_MEMBER_ID = "user123";
+
+    // 로그인 여부 확인 및 사용자 정보 표시
+    const token = localStorage.getItem("jwtToken");
+
+    if (!token) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/account/loginUI";
+    }
+
+    function parseJwt(token) {
+        const base64Payload = token.split('.')[1];
+        return JSON.parse(atob(base64Payload));
+    }
+
+    const payload = parseJwt(token);
+    const CURRENT_MEMBER_ID = payload.username;
+
     document.getElementById("user-badge").textContent = "👤 " + CURRENT_MEMBER_ID;
+
 
     function displayResults(books) {
         const resultsDiv = document.getElementById("results");

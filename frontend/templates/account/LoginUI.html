@@ -119,6 +119,7 @@
                 message.style.color = "green";
                 message.innerText = data.token;
 
+                window.location.href = "/book/SearchBookUI";
                
                 localStorage.setItem("jwtToken", data.token);
                 localStorage.setItem("accountId", data.accountId);
