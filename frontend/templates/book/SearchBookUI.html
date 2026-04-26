@@ -92,15 +92,25 @@
 <script>
 
     // 로그인 여부 확인 및 사용자 정보 표시
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get("token");
+
+    if (tokenFromUrl) {
+        localStorage.setItem("jwtToken", tokenFromUrl);
+
+        // 주소창에서 token 제거
+        window.history.replaceState({}, document.title, "/book/SearchBookUI");
+    }
+
     const token = localStorage.getItem("jwtToken");
 
     if (!token) {
         alert("로그인이 필요합니다.");
         window.location.href = "/account/loginUI";
     }
-
+    // 토큰 파싱하여 사용자 정보 추출
     function parseJwt(token) {
-        const base64Payload = token.split('.')[1];
+        const base64Payload = token.split(".")[1];
         return JSON.parse(atob(base64Payload));
     }
 

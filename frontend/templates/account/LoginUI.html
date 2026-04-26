@@ -119,11 +119,13 @@
                 message.style.color = "green";
                 message.innerText = data.token;
 
-                window.location.href = "/book/SearchBookUI";
-               
+                window.location.href = "/book/SearchBookUI?token=" + encodeURIComponent(data.token);
+               /*
                 localStorage.setItem("jwtToken", data.token);
                 localStorage.setItem("accountId", data.accountId);
                 localStorage.setItem("username", data.username);
+                window.location.href = "/book/SearchBookUI";
+                */
 
             } else {
                 message.style.color = "red";
