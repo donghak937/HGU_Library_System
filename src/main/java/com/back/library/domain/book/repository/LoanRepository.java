@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, String> {
+    long countByUserIdAndStatus(String userId, String status);
 }
