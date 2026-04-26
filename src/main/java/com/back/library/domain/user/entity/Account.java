@@ -10,7 +10,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Account {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String accountId;
+
+    @Column(unique = true)
+    private String username;
+
+    private String passwordHash;
+
+    private boolean ssoEnabled;
+
+    private String status;
+
+    public Account(String accountId, String username, String passwordHash, boolean ssoEnabled, String status) {
+        this.accountId = accountId;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.ssoEnabled = ssoEnabled;
+        this.status = status;
+    }
 }

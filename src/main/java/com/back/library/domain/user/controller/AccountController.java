@@ -1,8 +1,8 @@
 package com.back.library.domain.user.controller;
 
 import com.back.library.domain.user.dto.request.LoginRequest;
-import com.back.library.domain.user.entity.Member;
-import com.back.library.domain.user.repository.MemberRepository;
+import com.back.library.domain.user.entity.Account;
+import com.back.library.domain.user.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,34 +13,42 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private final MemberRepository memberRepository;
+    private final AccountRepository accountRepository;
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest request) {
 
-        Member member = memberRepository.findById(request.getUserId())
+        Account account = accountRepository.findByUsername(request.getUsername())
                 .orElse(null);
 
-        if (member == null) {
+        if (account == null) {
             return Map.of(
                     "success", false,
-                    "message", "존재하지 않는 사용자입니다."
+                    "message", "존재하지 않는 계정입니다."
             );
         }
 
-        if (!member.getPassword().equals(request.getPassword())) {
+        if (!account.getPasswordHash().equals(request.getPassword())) {
             return Map.of(
                     "success", false,
                     "message", "비밀번호가 틀렸습니다."
             );
         }
 
+        if (!account.getStatus().equals("ACTIVE")) {
+            return Map.of(
+                    "success", false,
+                    "message", "사용할 수 없는 계정입니다."
+            );
+        }
+
         return Map.of(
                 "success", true,
                 "message", "로그인 성공",
-                "userId", member.getUserId(),
-                "name", member.getName(),
-                "role", member.getRole()
+                "accountId", account.getAccountId(),
+                "username", account.getUsername(),
+                "ssoEnabled", account.isSsoEnabled(),
+                "status", account.getStatus()
         );
     }
 }
