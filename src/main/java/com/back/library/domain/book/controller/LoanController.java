@@ -61,6 +61,15 @@ public class LoanController {
     }
 
     /**
+     * 특정 유저의 대출 중인 도서 목록 조회
+     */
+    @GetMapping("/myLoans")
+    @ResponseBody
+    public java.util.List<com.back.library.domain.book.dto.loan.response.MyLoanResponse> getMyLoans(@RequestParam String memberId) {
+        return loanService.getActiveLoans(memberId);
+    }
+
+    /**
      * 도서 대출 처리
      */
     @PostMapping("/borrowBook")

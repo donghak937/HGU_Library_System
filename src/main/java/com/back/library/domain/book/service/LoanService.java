@@ -4,8 +4,11 @@ import com.back.library.domain.book.dto.loan.request.BorrowBookRequest;
 import com.back.library.domain.book.dto.loan.response.BorrowBookResponse;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.Loan;
+import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.repository.BookCopyRepository;
+import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.LoanRepository;
+import com.back.library.domain.book.dto.loan.response.MyLoanResponse;
 import com.back.library.domain.user.entity.Member;
 import com.back.library.domain.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,33 @@ public class LoanService {
     private final BookCopyRepository bookCopyRepository;
     private final LoanRepository loanRepository;
     private final MemberRepository memberRepository;
+    private final BookRepository bookRepository;
+
+    public java.util.List<MyLoanResponse> getActiveLoans(String memberId) {
+        java.util.List<Loan> activeLoans = loanRepository.findByUserIdAndStatus(memberId, "대출중");
+        java.util.List<MyLoanResponse> result = new java.util.ArrayList<>();
+        
+        for (Loan loan : activeLoans) {
+            Optional<BookCopy> copyOpt = bookCopyRepository.findById(loan.getCopyId());
+            if (copyOpt.isPresent()) {
+                BookCopy copy = copyOpt.get();
+                Optional<Book> bookOpt = bookRepository.findById(copy.getBookId());
+                if (bookOpt.isPresent()) {
+                    Book book = bookOpt.get();
+                    result.add(new MyLoanResponse(
+                        loan.getLoanId(),
+                        book.getBookId(),
+                        book.getTitle(),
+                        book.getAuthor(),
+                        copy.getBarcode(),
+                        loan.getLoanDate(),
+                        loan.getDueDate()
+                    ));
+                }
+            }
+        }
+        return result;
+    }
 
     @Transactional
     public BorrowBookResponse createLoan(BorrowBookRequest request, Long currentUserId) {
