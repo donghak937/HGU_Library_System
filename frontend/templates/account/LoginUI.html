@@ -103,7 +103,7 @@
         const password = document.getElementById("password").value;
         const message = document.getElementById("message");
 
-        fetch("/account/login", {
+        fetch("/account/sso-login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -117,10 +117,12 @@
         .then(data => {
             if (data.success) {
                 message.style.color = "green";
-                message.innerText = "로그인 성공";
+                message.innerText = data.token;
 
-                // 👉 나중에 메인 페이지로 이동
-                // window.location.href = "/main";
+               
+                localStorage.setItem("jwtToken", data.token);
+                localStorage.setItem("accountId", data.accountId);
+                localStorage.setItem("username", data.username);
 
             } else {
                 message.style.color = "red";
