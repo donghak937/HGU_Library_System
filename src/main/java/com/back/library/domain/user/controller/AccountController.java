@@ -4,18 +4,31 @@ import com.back.library.domain.user.dto.request.LoginRequest;
 import com.back.library.domain.user.entity.Account;
 import com.back.library.domain.user.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@RestController
-@RequestMapping("/api/v1/account")
+@Controller
+@RequestMapping("/account")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final AccountRepository accountRepository;
 
+    /**
+     * 로그인 UI 화면 렌더링
+     */
+    @GetMapping("/loginUI")
+    public String showLoginUI() {
+        return "account/loginUI";
+    }
+
+    /**
+     * 로그인 처리 API
+     */
     @PostMapping("/login")
+    @ResponseBody
     public Map<String, Object> login(@RequestBody LoginRequest request) {
 
         Account account = accountRepository.findByUsername(request.getUsername())
