@@ -18,6 +18,11 @@ public class Member {
     @Id // 이 값이 테이블의 고유 식별자(PK)임을 뜻합니다.
     private String userId; // 회원 고유 아이디
     
+    private String password;  //  로그인용 비밀번호
+    private String name;      //  사용자 이름
+    private String role;      //  권한 (STUDENT, PROFESSOR 등)
+
+
     private int maxLoanLimit; // 최대 대출 가능 권수
     private int loanPeriod; // 대출 허용 기간 (일)
     private boolean isSuspended; // 대출 정지 여부
