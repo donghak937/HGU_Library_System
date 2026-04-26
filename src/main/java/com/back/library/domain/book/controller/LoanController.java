@@ -1,9 +1,12 @@
 package com.back.library.domain.book.controller;
 
+import com.back.library.domain.book.dto.loan.request.BorrowBookRequest;
+import com.back.library.domain.book.dto.loan.response.BorrowBookResponse;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.Loan;
 import com.back.library.domain.book.repository.BookCopyRepository;
 import com.back.library.domain.book.repository.LoanRepository;
+import com.back.library.domain.book.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -20,6 +23,7 @@ public class LoanController {
 
     private final BookCopyRepository bookCopyRepository;
     private final LoanRepository loanRepository;
+    private final LoanService loanService;
 
     /**
      * 반납 UI 화면 렌더링
@@ -54,5 +58,15 @@ public class LoanController {
             }
         }
         return false;
+    }
+
+    /**
+     * 도서 대출 처리
+     */
+    @PostMapping("/borrowBook")
+    @ResponseBody
+    public boolean borrowBook(@RequestBody BorrowBookRequest request) {
+        BorrowBookResponse response = loanService.createLoan(request, null);
+        return response.isSuccess();
     }
 }

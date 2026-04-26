@@ -1,9 +1,11 @@
 package com.back.library.domain.book.dto.loan.request;
 
-import org.antlr.v4.runtime.misc.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-public record BorrowBookRequest (
-        @NotNull
-        Long loanId
-){
+@Getter
+@NoArgsConstructor
+public class BorrowBookRequest {
+    private String memberId;
+    private String bookId;
 }
