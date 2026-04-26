@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>HGU 도서 검색</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 600px; }
+        h1 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+        input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; }
+        button { width: 48%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-search { background-color: #3498db; }
+        .btn-search:hover { background-color: #2980b9; }
+        .btn-category { background-color: #9b59b6; float: right; }
+        .btn-category:hover { background-color: #8e44ad; }
+        #results { margin-top: 30px; }
+        .book-item { background: #ecf0f1; padding: 15px; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #3498db; }
+        .book-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; color: #2c3e50; }
+        .book-info { margin: 0; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1>🔍 HGU 도서 검색</h1>
+        
+        <div class="form-group">
+            <label for="keyword">제목 또는 저자로 검색</label>
+            <input type="text" id="keyword" placeholder="검색어를 입력하세요 (예: 해리포터)">
+        </div>
+
+        <div class="form-group">
+            <label for="category">카테고리로 검색</label>
+            <select id="category">
+                <option value="소설">소설</option>
+                <option value="IT">IT 전문서적</option>
+                <option value="경영">경영/경제</option>
+            </select>
+        </div>
+
+        <div>
+            <button class="btn-search" onclick="searchByKeyword()">키워드 검색</button>
+            <button class="btn-category" onclick="searchByCategory()">카테고리 검색</button>
+        </div>
+
+        <div id="results">
+            <!-- 검색 결과가 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <script>
+        function displayResults(books) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = ""; // 기존 결과 초기화
+
+            if (books.length === 0) {
+                resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>검색 결과가 없습니다.</p>";
+                return;
+            }
+
+            books.forEach(book => {
+                const bookDiv = document.createElement("div");
+                bookDiv.className = "book-item";
+                bookDiv.innerHTML = `
+                    <p class="book-title">📘 ${book.title}</p>
+                    <p class="book-info">저자: ${book.author} | 출판사: ${book.publisher}</p>
+                    <p class="book-info">분류: ${book.category} | ISBN: ${book.isbn}</p>
+                `;
+                resultsDiv.appendChild(bookDiv);
+            });
+        }
+
+        function searchByKeyword() {
+            const keyword = document.getElementById("keyword").value;
+            fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(data => displayResults(data))
+                .catch(error => alert("검색 중 오류가 발생했습니다."));
+        }
+
+        function searchByCategory() {
+            const category = document.getElementById("category").value;
+            fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`)
+                .then(response => response.json())
+                .then(data => displayResults(data))
+                .catch(error => alert("검색 중 오류가 발생했습니다."));
+        }
+    </script>
+</body>
+</html>

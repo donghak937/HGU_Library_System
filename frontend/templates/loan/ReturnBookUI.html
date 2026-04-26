@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>ReturnBookUI</title>
+</head>
+<body>
+    <h2>ReturnBookUI (도서 반납)</h2>
+    <form action="/loan/returnBook" method="post" id="returnForm">
+        Loan ID (String): <input type="text" name="loanId" required><br><br>
+        <!-- 버튼 클릭 시 requestReturn() 역할 수행 -->
+        <button type="submit">requestReturn() 제출</button>
+    </form>
+    <br>
+    ※ 제출 시 LoanController.returnBook(loanId) 가 호출됩니다.
+</body>
+</html>
