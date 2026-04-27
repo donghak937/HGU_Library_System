@@ -2,16 +2,143 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>ReturnBookUI</title>
+    <title>HGU 도서 반납</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 40px 0; box-sizing: border-box; }
+        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 640px; }
+        h1 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-search { background-color: #3498db; }
+        .btn-search:hover { background-color: #2980b9; }
+        
+        #results { margin-top: 30px; }
+
+        /* 책 카드 */
+        .book-item { background: #ecf0f1; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #e74c3c; overflow: hidden; }
+        .book-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+        .book-info-wrap { flex: 1; }
+        .book-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; color: #2c3e50; }
+        .book-info  { margin: 0; color: #7f8c8d; font-size: 0.9em; margin-bottom: 3px; }
+
+        /* 상태 뱃지 */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.82em; font-weight: bold; }
+        .badge-due { background: #fadbd8; color: #c0392b; }
+
+        /* 반납하기 버튼 */
+        .btn-return { width: auto; padding: 8px 16px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; font-size: 0.9em; font-weight: bold; cursor: pointer; white-space: nowrap; margin-top: 0; }
+        .btn-return:hover { background-color: #c0392b; }
+
+        /* 우측 상단 토스트 알림 */
+        #toast { position: fixed; top: 24px; right: 24px; background-color: #27ae60; color: white; padding: 14px 22px; border-radius: 8px; font-weight: bold; font-size: 0.95em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 9999; }
+        #toast.show { opacity: 1; }
+
+        /* 상단 회원명 뱃지 */
+        #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        #toast { top: 70px; } /* 뱃지 아래에 뜨도록 조정 */
+
+        .nav-links { text-align: center; margin-top: 20px; }
+        .nav-links a { color: #3498db; text-decoration: none; font-weight: bold; }
+        .nav-links a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <h2>ReturnBookUI (도서 반납)</h2>
-    <form action="/loan/returnBook" method="post" id="returnForm">
-        Loan ID (String): <input type="text" name="loanId" required><br><br>
-        <!-- 버튼 클릭 시 requestReturn() 역할 수행 -->
-        <button type="submit">requestReturn() 제출</button>
-    </form>
-    <br>
-    ※ 제출 시 LoanController.returnBook(loanId) 가 호출됩니다.
+
+<div id="toast">✅ 반납이 완료되었습니다!</div>
+<div id="user-badge"></div>
+
+<div class="search-container">
+    <h1>📚 HGU 내 서재 (대출/반납)</h1>
+
+    <div id="results"></div>
+
+    <div class="nav-links">
+        <a href="/book/SearchBookUI">← 도서 검색으로 돌아가기</a>
+    </div>
+</div>
+
+<script>
+    // 현재 로그인된 유저를 user123으로 가정 (SearchBookUI와 동일)
+    const CURRENT_MEMBER_ID = "user123";
+    document.getElementById("user-badge").textContent = "👤 " + CURRENT_MEMBER_ID;
+
+    // 페이지가 로드되면 즉시 대출 목록을 가져옵니다.
+    window.onload = function() {
+        fetchMyLoans();
+    };
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const d = new Date(dateString);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function fetchMyLoans() {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
+
+        fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`)
+            .then(res => res.json())
+            .then(loans => {
+                resultsDiv.innerHTML = "";
+                if (loans.length === 0) {
+                    resultsDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>대출 중인 도서가 없습니다.</p>";
+                    return;
+                }
+
+                loans.forEach(loan => {
+                    const loanDiv = document.createElement("div");
+                    loanDiv.className = "book-item";
+                    
+                    const overdueBadge = new Date() > new Date(loan.dueDate) 
+                        ? `<span class="badge badge-due">연체됨</span>` 
+                        : "";
+
+                    loanDiv.innerHTML = `
+                        <div class="book-header">
+                            <div class="book-info-wrap">
+                                <p class="book-title">📖 ${loan.bookTitle} ${overdueBadge}</p>
+                                <p class="book-info">저자: ${loan.author} | 바코드: ${loan.barcode}</p>
+                                <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
+                            </div>
+                            <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
+                        </div>
+                    `;
+                    resultsDiv.appendChild(loanDiv);
+                });
+            })
+            .catch(() => {
+                resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
+            });
+    }
+
+    function returnBook(loanId) {
+        if (!confirm("이 도서를 반납하시겠습니까?")) {
+            return;
+        }
+
+        fetch(`/loan/returnBook?loanId=${encodeURIComponent(loanId)}`, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(success => {
+            if (success) {
+                showToast();
+                fetchMyLoans(); // 반납 후 목록 새로고침
+            } else {
+                alert("반납 처리에 실패했습니다. (이미 반납되었거나 유효하지 않은 요청)");
+            }
+        })
+        .catch(() => alert("서버 통신 중 오류가 발생했습니다."));
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+</script>
 </body>
 </html>
