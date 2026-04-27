@@ -23,7 +23,7 @@ public class AccountController {
         return "account/loginUI";
     }
 
-    @PostMapping("/sso-login")
+    @PostMapping("/login")
     @ResponseBody
     public Map<String, Object> ssoLogin(@RequestBody LoginRequest request) {
 
@@ -55,6 +55,14 @@ public class AccountController {
                 "accountId", account.getAccountId(),
                 "username", account.getUsername(),
                 "status", account.getStatus()
+        );
+    }
+    @PostMapping("/logout")
+    @ResponseBody
+    public Map<String, Object> logout() {
+        return Map.of(
+                "success", true,
+                "message", "로그아웃 성공"
         );
     }
 }
