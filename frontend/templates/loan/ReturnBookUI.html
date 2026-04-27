@@ -36,7 +36,33 @@
         #toast.show { opacity: 1; }
 
         /* 상단 회원명 뱃지 */
-        #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        #user-badge {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+            display: flex;
+            align-items: center;   
+            gap: 10px;
+        }      
+        #logout-btn {
+            width: auto;
+            padding: 6px 10px;
+            margin: 0;             
+            background-color: #e74c3c;
+            font-size: 0.8em;
+        }
+
+        #logout-btn:hover {
+            background-color: #c0392b;
+        }
         #toast { top: 70px; } /* 뱃지 아래에 뜨도록 조정 */
 
         .nav-links { text-align: center; margin-top: 20px; }
@@ -47,7 +73,10 @@
 <body>
 
 <div id="toast">✅ 반납이 완료되었습니다!</div>
-<div id="user-badge"></div>
+<div id="user-badge">
+    <span id="user-name"></span>
+    <button id="logout-btn" onclick="logout()">로그아웃</button>
+</div>
 
 <div class="search-container">
     <h1>📚 HGU 내 서재 (대출/반납)</h1>
@@ -62,7 +91,7 @@
 <script>
     // 현재 로그인된 유저를 user123으로 가정 (SearchBookUI와 동일)
     const CURRENT_MEMBER_ID = "user123";
-    document.getElementById("user-badge").textContent = "👤 " + CURRENT_MEMBER_ID;
+    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
 
     // 페이지가 로드되면 즉시 대출 목록을 가져옵니다.
     window.onload = function() {
@@ -138,6 +167,13 @@
         const toast = document.getElementById("toast");
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+     function logout() {
+        localStorage.removeItem("jwtToken");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        alert("로그아웃 되었습니다.");
+        window.location.href = "/account/loginUI";
     }
 </script>
 </body>
