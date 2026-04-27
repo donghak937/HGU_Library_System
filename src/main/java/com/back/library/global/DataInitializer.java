@@ -15,6 +15,7 @@
     import org.springframework.boot.CommandLineRunner;
     import org.springframework.context.annotation.Bean;
     import org.springframework.stereotype.Component;
+    import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
     import java.util.Calendar;
     import java.util.Date;
@@ -107,11 +108,12 @@
                 memberRepository.save(m5);
 
                 // account 5개 (로그인 테스트용)
-                accountRepository.save(new Account("A-001", "user123", "1234", true, "ACTIVE"));
-                accountRepository.save(new Account("A-002", "hong_gildong", "1234", true, "ACTIVE"));
-                accountRepository.save(new Account("A-003", "prof_lee", "1234", true, "ACTIVE"));
-                accountRepository.save(new Account("A-004", "limit_user", "1234", true, "ACTIVE"));
-                accountRepository.save(new Account("A-005", "suspended_user", "1234", true, "SUSPENDED"));
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"), true, "ACTIVE"));
+                accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), true, "ACTIVE"));
+                accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), true, "ACTIVE"));
+                accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), true, "ACTIVE"));
+                accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), true, "SUSPENDED"));
 
 
                 // ════════════════════════════════════════════════
