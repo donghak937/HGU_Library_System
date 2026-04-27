@@ -89,9 +89,10 @@
     <div id="results"></div>
 </div>
 
+<script src="/static/js/auth.js"></script>
 <script>
-    //토큰 가져오기
-    const token = localStorage.getItem("jwtToken");
+    //액세스토큰 가져오기
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
         alert("로그인이 필요합니다.");

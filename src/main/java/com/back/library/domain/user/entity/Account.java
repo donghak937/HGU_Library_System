@@ -19,15 +19,20 @@ public class Account {
 
     private String passwordHash;
 
-    private boolean ssoEnabled;
+    @Column(length = 1000)
+    private String refreshToken;
 
     private String status;
 
-    public Account(String accountId, String username, String passwordHash, boolean ssoEnabled, String status) {
+    public Account(String accountId, String username, String passwordHash, String refreshToken, String status) {
         this.accountId = accountId;
         this.username = username;
         this.passwordHash = passwordHash;
-        this.ssoEnabled = ssoEnabled;
+        this.refreshToken = refreshToken;
         this.status = status;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

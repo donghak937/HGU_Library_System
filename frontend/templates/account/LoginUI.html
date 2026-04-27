@@ -184,25 +184,36 @@
                 showLoginFailure(data);
             }
         })
-        .catch(() => {
-            showLoginFailure({ message: "서버 오류 발생" });
+        .catch((error) => {
+            console.error(error);
+            showLoginFailure({ message: "로그인 처리 중 오류가 발생했습니다." });
         });
     }
-    function showLoginSuccess(data) {
-        localStorage.setItem("jwtToken", data.token);
+    // JWT 파싱 함수
+    function parseJwt(token) {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
 
-        // JWT 파싱해서 username 가져오기
-        const payload = JSON.parse(atob(data.token.split(".")[1]));
+    const jsonPayload = decodeURIComponent(
+        atob(base64)
+            .split("")
+            .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+            .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+}
+   function showLoginSuccess(data) {
+        console.log(data);
+
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+
+        const payload = parseJwt(data.accessToken);
         const username = payload.username;
 
-        // 로그인 폼 숨기기
         document.querySelector(".container").style.display = "none";
-
-        // 로그인 후 영역 표시
-        const afterLogin = document.getElementById("afterLogin");
-        afterLogin.style.display = "block";
-
-        // 닉네임 표시
+        document.getElementById("afterLogin").style.display = "block";
         document.getElementById("welcome").innerText = username + "님 환영합니다!";
     }
 
@@ -218,7 +229,8 @@
             method: "POST"
         })
         .then(() => {
-            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
             alert("로그아웃 되었습니다.");
             window.location.href = "/account/loginUI";
         })
