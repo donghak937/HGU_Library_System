@@ -90,18 +90,7 @@
 </div>
 
 <script>
-
-    // 로그인 여부 확인 및 사용자 정보 표시
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get("token");
-
-    if (tokenFromUrl) {
-        localStorage.setItem("jwtToken", tokenFromUrl);
-
-        // 주소창에서 token 제거
-        window.history.replaceState({}, document.title, "/book/SearchBookUI");
-    }
-
+    //토큰 가져오기
     const token = localStorage.getItem("jwtToken");
 
     if (!token) {

@@ -88,7 +88,7 @@
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
 
-    <button onclick="login()">Login</button>
+    <button onclick="submitLogin()">Login</button>
 
     <p id="message"></p>
 
@@ -98,12 +98,11 @@
 </div>
 
 <script>
-    function login() {
+   function submitLogin() {
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
-        const message = document.getElementById("message");
 
-        fetch("/account/sso-login", {
+        fetch("/account/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -116,27 +115,42 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                message.style.color = "green";
-                message.innerText = data.token;
-
-                window.location.href = "/book/SearchBookUI?token=" + encodeURIComponent(data.token);
-               /*
-                localStorage.setItem("jwtToken", data.token);
-                localStorage.setItem("accountId", data.accountId);
-                localStorage.setItem("username", data.username);
-                window.location.href = "/book/SearchBookUI";
-                */
-
+                showLoginSuccess(data);
             } else {
-                message.style.color = "red";
-                message.innerText = data.message;
+                showLoginFailure(data);
             }
         })
         .catch(() => {
-            message.style.color = "red";
-            message.innerText = "서버 오류 발생";
+            showLoginFailure({ message: "서버 오류 발생" });
         });
     }
+    function showLoginSuccess(data) {
+        localStorage.setItem("jwtToken", data.token);
+        window.location.href = "/book/SearchBookUI";
+        alert("로그인 성공");
+    }
+
+    function showLoginFailure(data) {
+        const message = document.getElementById("message");
+
+        message.style.color = "red";
+        message.innerText = data.message || "로그인 실패";
+    }
+
+    function logout() {
+        fetch("/account/logout", {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            localStorage.removeItem("jwtToken");
+
+            window.location.href = "/account/loginUI";
+        })
+        .catch(() => {
+            alert("로그아웃 중 오류가 발생했습니다.");
+    });
+}
 </script>
 
 </body>
