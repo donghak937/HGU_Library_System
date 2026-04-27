@@ -77,6 +77,62 @@
             font-size: 12px;
             color: #aaa;
         }
+        .after-container {
+            width: 380px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+
+            display: none; /* 기본 숨김 */
+        }
+
+        .after-container h2 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 22px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 도서 시스템 버튼 */
+        .main-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #4f8cff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .main-btn:hover {
+            background: #3b6fdc;
+        }
+
+        /* 로그아웃 버튼 */
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #eee;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ddd;
+}
     </style>
 </head>
 <body>
@@ -96,7 +152,14 @@
         Handong Global University Library System
     </div>
 </div>
+<div id="afterLogin" class="after-container" style="display:none">
+    <h2 id="welcome"></h2>
 
+    <div class="button-group">
+        <button class="main-btn" onclick="goToLibrary()">도서 시스템 이용</button>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+</div>
 <script>
    function submitLogin() {
         const username = document.getElementById("username").value;
@@ -126,8 +189,20 @@
     }
     function showLoginSuccess(data) {
         localStorage.setItem("jwtToken", data.token);
-        window.location.href = "/book/SearchBookUI";
-        alert("로그인 성공");
+
+        // JWT 파싱해서 username 가져오기
+        const payload = JSON.parse(atob(data.token.split(".")[1]));
+        const username = payload.username;
+
+        // 로그인 폼 숨기기
+        document.querySelector(".container").style.display = "none";
+
+        // 로그인 후 영역 표시
+        const afterLogin = document.getElementById("afterLogin");
+        afterLogin.style.display = "block";
+
+        // 닉네임 표시
+        document.getElementById("welcome").innerText = username + "님 환영합니다!";
     }
 
     function showLoginFailure(data) {
@@ -141,16 +216,18 @@
         fetch("/account/logout", {
             method: "POST"
         })
-        .then(res => res.json())
-        .then(data => {
+        .then(() => {
             localStorage.removeItem("jwtToken");
-
+            alert("로그아웃 되었습니다.");
             window.location.href = "/account/loginUI";
         })
         .catch(() => {
             alert("로그아웃 중 오류가 발생했습니다.");
-    });
-}
+        });
+    }
+    function goToLibrary() {
+        window.location.href = "/book/SearchBookUI";
+    }
 </script>
 
 </body>
