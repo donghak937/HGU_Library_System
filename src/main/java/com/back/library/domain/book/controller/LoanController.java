@@ -7,6 +7,10 @@ import com.back.library.domain.book.entity.Loan;
 import com.back.library.domain.book.repository.BookCopyRepository;
 import com.back.library.domain.book.repository.LoanRepository;
 import com.back.library.domain.book.service.LoanService;
+import com.back.library.domain.book.state.BorrowedState;
+import com.back.library.domain.book.state.LoanState;
+import com.back.library.domain.book.state.OverdueState;
+import com.back.library.domain.book.state.ReturnedState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -24,6 +28,18 @@ public class LoanController {
     private final BookCopyRepository bookCopyRepository;
     private final LoanRepository loanRepository;
     private final LoanService loanService;
+
+    public LoanState getLoanState(Loan loan) {
+        if (loan.getReturnDate() != null) {
+            return new ReturnedState();
+        }
+
+        if (loan.getDueDate() != null && loan.getDueDate().before(new Date())) {
+            return new OverdueState();
+        }
+
+        return new BorrowedState();
+    }
 
     /**
      * 반납 UI 화면 렌더링
@@ -43,7 +59,7 @@ public class LoanController {
         if (loanOpt.isPresent()) {
             Loan loan = loanOpt.get();
             
-            if ("대출중".equals(loan.getStatus())) {
+            if (getLoanState(loan).canReturn(loan)) {
                 loan.setStatus("반납완료");
                 loan.setReturnDate(new Date());
                 loanRepository.save(loan);
