@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
 import java.util.Date;
 import java.util.Optional;
+import com.back.library.domain.user.repository.MemberRepository;
+import java.util.Calendar;
+import java.util.Map;
 
 /**
  * 도서 반납 컨트롤러
@@ -28,6 +31,7 @@ public class LoanController {
     private final BookCopyRepository bookCopyRepository;
     private final LoanRepository loanRepository;
     private final LoanService loanService;
+    private final MemberRepository memberRepository;
 
     public LoanState getLoanState(Loan loan) {
         if (loan.getReturnDate() != null) {
@@ -93,5 +97,46 @@ public class LoanController {
     public boolean borrowBook(@RequestBody BorrowBookRequest request) {
         BorrowBookResponse response = loanService.createLoan(request, null);
         return response.isSuccess();
+    }
+
+    /**
+     * 대출 연장 처리 (extendLoan)
+     * - checkExtensionEligibility: State 패턴의 canExtend()로 확인
+     * - updateDueDate: 7일 연장
+     */
+    @PostMapping("/extendLoan")
+    @ResponseBody
+    public Map<String, Object> extendLoan(@RequestParam String loanId) {
+        Optional<Loan> loanOpt = loanRepository.findById(loanId);
+        if (loanOpt.isEmpty()) {
+            return Map.of("success", false, "message", "존재하지 않는 대출입니다.");
+        }
+
+        Loan loan = loanOpt.get();
+
+        // checkExtensionEligibility — State 패턴 활용
+        LoanState state = getLoanState(loan);
+        if (!state.canExtend(loan)) {
+            return Map.of("success", false, "message", "연장 불가: 연체 중이거나 이미 반납된 도서입니다.");
+        }
+
+        // 최대 연장 횟수 확인 (1회)
+        if (loan.getExtensionCount() >= 1) {
+            return Map.of("success", false, "message", "연장 불가: 이미 1회 연장하셨습니다.");
+        }
+
+        // updateDueDate — 7일 연장
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(loan.getDueDate());
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        loan.setDueDate(cal.getTime());
+        loan.setExtensionCount(loan.getExtensionCount() + 1);
+        loanRepository.save(loan);
+
+        return Map.of(
+                "success", true,
+                "message", "대출이 7일 연장되었습니다.",
+                "newDueDate", loan.getDueDate().toString()
+        );
     }
 }

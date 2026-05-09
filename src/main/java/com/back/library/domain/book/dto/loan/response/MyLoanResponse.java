@@ -15,4 +15,5 @@ public class MyLoanResponse {
     private String barcode;
     private Date loanDate;
     private Date dueDate;
+    private int extensionCount;
 }
