@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import com.back.library.domain.book.repository.BookRepository;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class BookController {
     private final KeywordSearchStrategy keywordSearchStrategy;
     private final CategorySearchStrategy categorySearchStrategy;
     private BookSearchStrategy searchStrategy;
+    private final BookRepository bookRepository;
 
     public void setSearchStrategy(BookSearchStrategy strategy) {
         this.searchStrategy = strategy;

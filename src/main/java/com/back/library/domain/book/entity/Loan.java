@@ -26,4 +26,5 @@ public class Loan {
     // 관계형 데이터베이스의 외래키(Foreign Key) 역할을 하는 연결 ID들입니다.
     private String userId; // 누가 책을 빌렸는지 기억하는 아이디
     private String copyId; // 어떤 책을 빌렸는지 기억하는 아이디
+    private int extensionCount;
 }
