@@ -7,6 +7,7 @@ import com.back.library.domain.book.strategy.BookSearchStrategy;
 import com.back.library.domain.book.strategy.CategorySearchStrategy;
 import com.back.library.domain.book.strategy.KeywordSearchStrategy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,6 +56,17 @@ public class BookController {
     public List<Book> searchBooksByCategory(@RequestParam String category) {
         setSearchStrategy(categorySearchStrategy);
         return searchStrategy.search(category);
+    }
+
+    /**
+     * 특정 도서 상세 정보 조회 (JSON 반환)
+     */
+    @GetMapping("/details")
+    @ResponseBody
+    public ResponseEntity<Book> viewBookDetails(@RequestParam String bookId) {
+        return bookRepository.findById(bookId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**
