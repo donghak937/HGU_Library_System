@@ -1,7 +1,6 @@
 package com.back.library.global.config;
 
 import com.back.library.global.security.JwtInterceptor;
-
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +26,14 @@ public class WebConfig implements WebMvcConfigurer {
                         "/account/login",
                         "/account/loginUI",
                         "/account/refresh",
+
                         "/book/SearchBookUI",
+
+                        "/book/searchBooks",
+                        "/book/searchBooksByCategory",
+                        "/book/details",
+                        "/book/copies",
+
                         "/loan/ReturnBookUI",
 
                         "/js/**",

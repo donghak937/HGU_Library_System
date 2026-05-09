@@ -132,13 +132,6 @@
 
 <script src="/static/js/auth.js"></script>
 <script>
-    //액세스토큰 가져오기
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-        alert("로그인이 필요합니다.");
-        window.location.href = "/account/loginUI";
-    }
     // 토큰 파싱하여 사용자 정보 추출
     function parseJwt(token) {
         const base64Payload = token.split(".")[1];
@@ -146,15 +139,35 @@
     }
 
     function authHeader() {
-    return {
-        "Authorization": "Bearer " + localStorage.getItem("accessToken")
-    };
-}
 
-    const payload = parseJwt(token);
-    const CURRENT_MEMBER_ID = payload.username;
+        const token =
+            localStorage.getItem("accessToken");
 
-    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
+        if (!token) return {};
+
+        return {
+            "Authorization": "Bearer " + token
+        };
+    }
+
+    const token = localStorage.getItem("accessToken");
+
+    let CURRENT_MEMBER_ID = null;
+
+    if (token) {
+        const payload = parseJwt(token);
+        CURRENT_MEMBER_ID = payload.username;
+
+        document.getElementById("user-name").textContent =
+            "👤 " + CURRENT_MEMBER_ID;
+    } else {
+        document.getElementById("user-badge").innerHTML = `
+            <button id="logout-btn"
+                    onclick="window.location.href='/account/loginUI'">
+                로그인
+            </button>
+        `;
+    }
 
 
     function displayResults(books) {
@@ -259,10 +272,7 @@
     }
 
     function loadCopies(bookId, panel) {
-        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`, {
-            headers: authHeader()
-        })
-                
+        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
             .then(res => res.json())
             .then(copies => {
                 panel.dataset.loaded = "true";
@@ -272,7 +282,7 @@
                 }
                 let rows = copies.map(c => {
                     const badgeClass = c.status === "대출가능" ? "badge-available" : "badge-loaned";
-                    const borrowBtn  = c.status === "대출가능"
+                    const borrowBtn  = c.status === "대출가능" && CURRENT_MEMBER_ID //게스트는 대출 버튼 안보이게
                         ? `<button class="btn-borrow-copy" onclick="requestBorrowCopy('${c.bookId}')">대출하기</button>`
                         : "";
                     return `<tr>
@@ -331,9 +341,7 @@
 
     function searchByKeyword() {
         const keyword = document.getElementById("keyword").value;
-        fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`, {
-            headers: authHeader()
-        })
+        fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`)
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("검색 중 오류가 발생했습니다."));
@@ -341,19 +349,25 @@
 
     function searchByCategory() {
         const category = document.getElementById("category").value;
-        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`, {
-            headers: authHeader()
-        })
+        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`)
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("검색 중 오류가 발생했습니다."));
     }
     function logout() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        alert("로그아웃 되었습니다.");
-        window.location.href = "/account/loginUI";
+        fetch("/account/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+        .then(() => {
+
+            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+
+            alert("로그아웃 되었습니다.");
+
+            window.location.replace("/account/loginUI");
+        });
     }
 </script>
 </body>

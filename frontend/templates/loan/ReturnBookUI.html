@@ -186,7 +186,8 @@
         if (!confirm("이 도서를 7일 연장하시겠습니까?")) return;
 
         fetch(`/loan/extendLoan?loanId=${encodeURIComponent(loanId)}`, {
-            method: "POST"
+            method: "POST",
+            headers: authHeader()
         })
         .then(res => res.json())
         .then(data => {
@@ -234,12 +235,34 @@
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3000);
     }
-     function logout() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        alert("로그아웃 되었습니다.");
-        window.location.href = "/account/loginUI";
+    //토큰 인증용
+    function authHeader() {
+
+        const token =
+            localStorage.getItem("accessToken");
+
+        if (!token) return {};
+
+        return {
+            "Authorization": "Bearer " + token
+        };
+    }
+
+
+    function logout() {
+        fetch("/account/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+        .then(() => {
+
+            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+
+            alert("로그아웃 되었습니다.");
+
+            window.location.replace("/account/loginUI");
+        });
     }
 </script>
 </body>
