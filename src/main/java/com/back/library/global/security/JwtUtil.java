@@ -16,10 +16,12 @@ public class JwtUtil {
             "hgu-library-system-jwt-secret-key-1234567890".getBytes()
     );
 
-    private final long accessExpirationTime = 1000 * 60 * 3; // 30분
+    private final long accessExpirationTime = 1000 * 60 * 30; // 30분
     private final long refreshExpirationTime = 1000L * 60 * 60 * 24 * 7; // 7일
 
+    // Access Token 생성
     public String createAccessToken(String accountId, String username, String status) {
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessExpirationTime);
 
@@ -34,7 +36,9 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Refresh Token 생성
     public String createRefreshToken(String accountId) {
+
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshExpirationTime);
 
@@ -47,20 +51,27 @@ public class JwtUtil {
                 .compact();
     }
 
+    // 토큰 검증
     public boolean validateToken(String token) {
+
         try {
+
             Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
 
             return true;
+
         } catch (Exception e) {
+
             return false;
         }
     }
 
+    // accountId 추출
     public String getAccountId(String token) {
+
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -68,5 +79,39 @@ public class JwtUtil {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    // username 추출
+    public String getUsername(String token) {
+
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("username", String.class);
+    }
+
+    // status 추출
+    public String getStatus(String token) {
+
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("status", String.class);
+    }
+
+    // Authorization 헤더에서 Bearer 제거
+    public String extractToken(String authHeader) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        return authHeader.replace("Bearer ", "");
     }
 }

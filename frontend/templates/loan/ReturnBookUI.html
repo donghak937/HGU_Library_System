@@ -90,8 +90,26 @@
 
 <script>
     // 현재 로그인된 유저를 user123으로 가정 (SearchBookUI와 동일)
-    const CURRENT_MEMBER_ID = "user123";
-    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/account/loginUI";
+    }
+
+    function parseJwt(token) {
+
+        const base64Payload = token.split(".")[1];
+
+        return JSON.parse(atob(base64Payload));
+    }
+
+    const payload = parseJwt(token);
+
+    const CURRENT_MEMBER_ID = payload.username;
+
+    document.getElementById("user-name").textContent =
+    "👤 " + CURRENT_MEMBER_ID;
 
     // 페이지가 로드되면 즉시 대출 목록을 가져옵니다.
     window.onload = function() {
@@ -108,7 +126,11 @@
         const resultsDiv = document.getElementById("results");
         resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
 
-        fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`)
+        fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
             .then(res => res.json())
             .then(loans => {
                 resultsDiv.innerHTML = "";
@@ -149,7 +171,10 @@
         }
 
         fetch(`/loan/returnBook?loanId=${encodeURIComponent(loanId)}`, {
-            method: "POST"
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
         })
         .then(res => res.json())
         .then(success => {

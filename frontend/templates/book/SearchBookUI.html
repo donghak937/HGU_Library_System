@@ -136,6 +136,12 @@
         return JSON.parse(atob(base64Payload));
     }
 
+    function authHeader() {
+    return {
+        "Authorization": "Bearer " + localStorage.getItem("accessToken")
+    };
+}
+
     const payload = parseJwt(token);
     const CURRENT_MEMBER_ID = payload.username;
 
@@ -188,7 +194,10 @@
     }
 
     function loadCopies(bookId, panel) {
-        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
+        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`, {
+            headers: authHeader()
+        })
+                
             .then(res => res.json())
             .then(copies => {
                 panel.dataset.loaded = "true";
@@ -227,7 +236,10 @@
     function requestBorrowCopy(bookId) {
         fetch("/loan/borrowBook", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeader()
+            },
             body: JSON.stringify({ memberId: CURRENT_MEMBER_ID, bookId: bookId })
         })
         .then(res => res.json())
@@ -254,7 +266,9 @@
 
     function searchByKeyword() {
         const keyword = document.getElementById("keyword").value;
-        fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`)
+        fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`, {
+            headers: authHeader()
+        })
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("검색 중 오류가 발생했습니다."));
@@ -262,7 +276,9 @@
 
     function searchByCategory() {
         const category = document.getElementById("category").value;
-        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`)
+        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`, {
+            headers: authHeader()
+        })
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("검색 중 오류가 발생했습니다."));
