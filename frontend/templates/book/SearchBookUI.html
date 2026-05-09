@@ -320,7 +320,8 @@
 
     function requestReserve(bookId, panelBookId) {
         fetch(`/book/reserveBook?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}&bookId=${encodeURIComponent(bookId)}`, {
-            method: "POST"
+            method: "POST",
+            headers: authHeader()
         })
         .then(res => res.json())
         .then(data => {
