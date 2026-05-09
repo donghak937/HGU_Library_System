@@ -109,6 +109,12 @@
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
+    function calculateOverdueDays(dueDate) {
+        if (!dueDate) return 0;
+        const diff = new Date().getTime() - new Date(dueDate).getTime();
+        return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+    }
+
     function fetchMyLoans() {
         const resultsDiv = document.getElementById("results");
         resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
@@ -127,7 +133,8 @@
                     loanDiv.className = "book-item";
 
                     const isOverdue = new Date() > new Date(loan.dueDate);
-                    const overdueBadge = isOverdue ? `<span class="badge badge-due">연체됨</span>` : "";
+                    const overdueDays = loan.overdueDays ?? calculateOverdueDays(loan.dueDate);
+                    const overdueBadge = isOverdue ? `<span class="badge badge-due">연체 ${overdueDays}일</span>` : "";
                     const extendedBadge = loan.extensionCount > 0
                         ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
                     const extendDisabled = (isOverdue || loan.extensionCount >= 1) ? "disabled" : "";

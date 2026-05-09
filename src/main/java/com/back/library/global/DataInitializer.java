@@ -125,7 +125,7 @@
                 // B-001 해리포터 (사본 3개)
                 saveBook(bookRepository, "B-001", "해리포터와 마법사의 돌", "J.K. 롤링", "문학수첩", "9788983920677", "소설");
                 saveCopy(bookCopyRepository, "C-001", "B-001", "BC-001", "대출중",   "1F-A01");
-                saveCopy(bookCopyRepository, "C-002", "B-001", "BC-002", "대출가능", "1F-A01");
+                saveCopy(bookCopyRepository, "C-002", "B-001", "BC-002", "대출중", "1F-A01");
                 saveCopy(bookCopyRepository, "C-003", "B-001", "BC-003", "대출가능", "1F-A01");
 
                 // B-002 채식주의자 (사본 2개)
@@ -285,8 +285,9 @@
                 // 대출 기록
                 // ════════════════════════════════════════════════
 
-                // user123: 1권 대출중 (해리포터 C-001)
+                // user123: 2권 대출중 (해리포터 C-001, 연체 테스트용 C-002)
                 saveLoan(loanRepository, "L-001", "user123", "C-001", tenDaysAgo, dueIn4,  null,      "대출중");
+                saveLoan(loanRepository, "L-013", "user123", "C-002", twentyDaysAgo, overdue3, null, "대출중");
 
                 // hong_gildong: 반납 완료 기록 2개
                 saveLoan(loanRepository, "L-002", "hong_gildong", "C-005", twentyDaysAgo, overdue8, twentyDaysAgo, "반납완료");
