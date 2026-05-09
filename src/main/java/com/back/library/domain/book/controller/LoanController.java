@@ -65,7 +65,7 @@ public class LoanController {
      */
     @GetMapping("/myLoans")
     @ResponseBody
-    public java.util.List<com.back.library.domain.book.dto.loan.response.MyLoanResponse> getMyLoans(@RequestParam String memberId) {
+    public java.util.List<com.back.library.domain.book.dto.loan.response.MyLoanResponse> viewCurrentLoans(@RequestParam String memberId) {
         return loanService.getActiveLoans(memberId);
     }
 
