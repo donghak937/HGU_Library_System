@@ -16,12 +16,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-
         registry.addInterceptor(jwtInterceptor)
+                //경로에 적힌 주소들은 인터셉터에 잡혀 토큰 유효성 검사를 함
                 .addPathPatterns(
                         "/book/**",
                         "/loan/**"
                 )
+                //여기 경로에 적힌  주소들은 인터셉터에 잡히지 않음
                 .excludePathPatterns(
                         "/account/login",
                         "/account/loginUI",
@@ -33,9 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/book/searchBooksByCategory",
                         "/book/details",
                         "/book/copies",
-
                         "/loan/ReturnBookUI",
-
                         "/js/**",
                         "/css/**",
                         "/images/**",
