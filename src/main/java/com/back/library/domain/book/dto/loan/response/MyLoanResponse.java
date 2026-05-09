@@ -17,4 +17,5 @@ public class MyLoanResponse {
     private Date dueDate;
     private int extensionCount;
     private int overdueDays;
+    private boolean hasReservation;
 }
