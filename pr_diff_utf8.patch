@@ -1,0 +1,925 @@
+﻿diff --git a/frontend/templates/book/SearchBookUI.html b/frontend/templates/book/SearchBookUI.html
+index 77ff755..169ab27 100644
+--- a/frontend/templates/book/SearchBookUI.html
++++ b/frontend/templates/book/SearchBookUI.html
+@@ -4,88 +4,220 @@
+     <meta charset="UTF-8">
+     <title>HGU ?꾩꽌 寃??/title>
+     <style>
+-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+-        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 600px; }
++        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 40px 0; box-sizing: border-box; }
++        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 640px; }
+         h1 { color: #2c3e50; text-align: center; }
+         .form-group { margin-bottom: 20px; }
+         label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+         input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; }
+         button { width: 48%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+-        .btn-search { background-color: #3498db; }
++        .btn-search   { background-color: #3498db; }
+         .btn-search:hover { background-color: #2980b9; }
+         .btn-category { background-color: #9b59b6; float: right; }
+         .btn-category:hover { background-color: #8e44ad; }
+         #results { margin-top: 30px; }
+-        .book-item { background: #ecf0f1; padding: 15px; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #3498db; }
++
++        /* 梨?移대뱶 */
++        .book-item { background: #ecf0f1; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #3498db; overflow: hidden; }
++        .book-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
++        .book-info-wrap { flex: 1; }
+         .book-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; color: #2c3e50; }
+-        .book-info { margin: 0; color: #7f8c8d; font-size: 0.9em; }
++        .book-info  { margin: 0; color: #7f8c8d; font-size: 0.9em; }
++
++        /* ?щ낯 ?좉? 踰꾪듉 */
++        .btn-toggle { width: auto; padding: 6px 12px; background-color: #7f8c8d; border-radius: 6px; font-size: 0.8em; white-space: nowrap; margin-top: 0; color: white; border: none; font-weight: bold; cursor: pointer; }
++        .btn-toggle:hover { background-color: #636e72; }
++
++        /* ?щ낯 紐⑸줉 ?⑤꼸 */
++        .copy-panel { display: none; background: #fff; border-top: 1px solid #bdc3c7; padding: 12px 16px; }
++        .copy-panel.open { display: block; }
++        .copy-panel table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
++        .copy-panel th { background: #dfe6e9; color: #2c3e50; padding: 7px 10px; text-align: left; }
++        .copy-panel td { padding: 7px 10px; border-bottom: 1px solid #ecf0f1; color: #34495e; }
++        .copy-panel tr:last-child td { border-bottom: none; }
++
++        /* ?곹깭 諭껋? */
++        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.82em; font-weight: bold; }
++        .badge-available { background: #d5f5e3; color: #1e8449; }
++        .badge-loaned    { background: #fadbd8; color: #c0392b; }
++
++        /* ?щ낯 ?異쒗븯湲?踰꾪듉 */
++        .btn-borrow-copy { padding: 4px 12px; background-color: #27ae60; color: white; border: none; border-radius: 5px; font-size: 0.82em; font-weight: bold; cursor: pointer; white-space: nowrap; }
++        .btn-borrow-copy:hover { background-color: #219a52; }
++
++        /* ?ㅻⅨ履??곷떒 ?좎뒪??*/
++        #toast { position: fixed; top: 24px; right: 24px; background-color: #27ae60; color: white; padding: 14px 22px; border-radius: 8px; font-weight: bold; font-size: 0.95em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 9999; }
++        #toast.show { opacity: 1; }
++
++        /*?곷떒 ?뚯썝紐?/
++        #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
++        #toast { position: fixed; top: 70px; right: 24px; ... }
+     </style>
+ </head>
+ <body>
+-    <div class="search-container">
+-        <h1>?뵇 HGU ?꾩꽌 寃??/h1>
+-        
+-        <div class="form-group">
+-            <label for="keyword">?쒕ぉ ?먮뒗 ??먮줈 寃??/label>
+-            <input type="text" id="keyword" placeholder="寃?됱뼱瑜??낅젰?섏꽭??(?? ?대━?ы꽣)">
+-        </div>
+-
+-        <div class="form-group">
+-            <label for="category">移댄뀒怨좊━濡?寃??/label>
+-            <select id="category">
+-                <option value="?뚯꽕">?뚯꽕</option>
+-                <option value="IT">IT ?꾨Ц?쒖쟻</option>
+-                <option value="寃쎌쁺">寃쎌쁺/寃쎌젣</option>
+-            </select>
+-        </div>
+-
+-        <div>
+-            <button class="btn-search" onclick="searchByKeyword()">?ㅼ썙??寃??/button>
+-            <button class="btn-category" onclick="searchByCategory()">移댄뀒怨좊━ 寃??/button>
+-        </div>
+-
+-        <div id="results">
+-            <!-- 寃??寃곌낵媛 ?ш린???쒖떆?⑸땲??-->
+-        </div>
++
++<div id="toast">???異??섏뿀?듬땲??/div>
++<div id="user-badge"></div>
++
++<div class="search-container">
++    <h1>?뵇 HGU ?꾩꽌 寃??/h1>
++
++    <div class="form-group">
++        <label for="keyword">?쒕ぉ ?먮뒗 ??먮줈 寃??/label>
++        <input type="text" id="keyword" placeholder="寃?됱뼱瑜??낅젰?섏꽭??(?? ?대━?ы꽣)">
++    </div>
++
++    <div class="form-group">
++        <label for="category">移댄뀒怨좊━濡?寃??/label>
++        <select id="category">
++            <option value="?뚯꽕">?뚯꽕</option>
++            <option value="而댄벂?곌났??>而댄벂?곌났??/option>
++            <option value="??궗">??궗</option>
++            <option value="怨쇳븰">怨쇳븰</option>
++            <option value="寃쎌쁺">寃쎌쁺</option>
++            <option value="泥좏븰">泥좏븰</option>
++            <option value="?먭린怨꾨컻">?먭린怨꾨컻</option>
++            <option value="?섑븰">?섑븰</option>
++        </select>
++    </div>
++
++    <div>
++        <button class="btn-search" onclick="searchByKeyword()">?ㅼ썙??寃??/button>
++        <button class="btn-category" onclick="searchByCategory()">移댄뀒怨좊━ 寃??/button>
+     </div>
+ 
+-    <script>
+-        function displayResults(books) {
+-            const resultsDiv = document.getElementById("results");
+-            resultsDiv.innerHTML = ""; // 湲곗〈 寃곌낵 珥덇린??+    <div id="results"></div>
++</div>
+ 
+-            if (books.length === 0) {
+-                resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>寃??寃곌낵媛 ?놁뒿?덈떎.</p>";
+-                return;
++<script>
++    const CURRENT_MEMBER_ID = "user123";
++    document.getElementById("user-badge").textContent = "?뫀 " + CURRENT_MEMBER_ID;
++
++    function displayResults(books) {
++        const resultsDiv = document.getElementById("results");
++        resultsDiv.innerHTML = "";
++
++        if (books.length === 0) {
++            resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>寃??寃곌낵媛 ?놁뒿?덈떎.</p>";
++            return;
++        }
++
++        books.forEach(book => {
++            const bookDiv = document.createElement("div");
++            bookDiv.className = "book-item";
++            bookDiv.innerHTML = `
++                <div class="book-header">
++                    <div class="book-info-wrap">
++                        <p class="book-title">?뱲 ${book.title}</p>
++                        <p class="book-info">??? ${book.author} | 異쒗뙋?? ${book.publisher}</p>
++                        <p class="book-info">遺꾨쪟: ${book.category} | ISBN: ${book.isbn}</p>
++                    </div>
++                    <button class="btn-toggle" onclick="toggleCopies('${book.bookId}', this)">???щ낯 蹂닿린</button>
++                </div>
++                <div class="copy-panel" id="copies-${book.bookId}">
++                    <p style="color:#7f8c8d; font-size:0.9em;">遺덈윭?ㅻ뒗 以?..</p>
++                </div>
++            `;
++            resultsDiv.appendChild(bookDiv);
++        });
++    }
++
++    function toggleCopies(bookId, btn) {
++        const panel = document.getElementById("copies-" + bookId);
++        const isOpen = panel.classList.contains("open");
++
++        if (isOpen) {
++            panel.classList.remove("open");
++            btn.textContent = "???щ낯 蹂닿린";
++        } else {
++            panel.classList.add("open");
++            btn.textContent = "???щ낯 ?リ린";
++            if (panel.dataset.loaded !== "true") {
++                loadCopies(bookId, panel);
+             }
++        }
++    }
+ 
+-            books.forEach(book => {
+-                const bookDiv = document.createElement("div");
+-                bookDiv.className = "book-item";
+-                bookDiv.innerHTML = `
+-                    <p class="book-title">?뱲 ${book.title}</p>
+-                    <p class="book-info">??? ${book.author} | 異쒗뙋?? ${book.publisher}</p>
+-                    <p class="book-info">遺꾨쪟: ${book.category} | ISBN: ${book.isbn}</p>
++    function loadCopies(bookId, panel) {
++        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
++            .then(res => res.json())
++            .then(copies => {
++                panel.dataset.loaded = "true";
++                if (copies.length === 0) {
++                    panel.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>?깅줉???щ낯???놁뒿?덈떎.</p>";
++                    return;
++                }
++                let rows = copies.map(c => {
++                    const badgeClass = c.status === "?異쒓??? ? "badge-available" : "badge-loaned";
++                    const borrowBtn  = c.status === "?異쒓???
++                        ? `<button class="btn-borrow-copy" onclick="requestBorrowCopy('${c.bookId}')">?異쒗븯湲?/button>`
++                        : "";
++                    return `<tr>
++                        <td>${c.copyId}</td>
++                        <td>${c.barcode}</td>
++                        <td>${c.location}</td>
++                        <td><span class="badge ${badgeClass}">${c.status}</span></td>
++                        <td>${borrowBtn}</td>
++                    </tr>`;
++                }).join("");
++
++                panel.innerHTML = `
++                    <table>
++                        <thead>
++                            <tr><th>?щ낯 ID</th><th>諛붿퐫??/th><th>?꾩튂</th><th>?곹깭</th><th></th></tr>
++                        </thead>
++                        <tbody>${rows}</tbody>
++                    </table>
+                 `;
+-                resultsDiv.appendChild(bookDiv);
++            })
++            .catch(() => {
++                panel.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>?щ낯 ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??</p>";
+             });
+-        }
++    }
+ 
+-        function searchByKeyword() {
+-            const keyword = document.getElementById("keyword").value;
+-            fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`)
+-                .then(response => response.json())
+-                .then(data => displayResults(data))
+-                .catch(error => alert("寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."));
+-        }
++    function requestBorrowCopy(bookId) {
++        fetch("/loan/borrowBook", {
++            method: "POST",
++            headers: { "Content-Type": "application/json" },
++            body: JSON.stringify({ memberId: CURRENT_MEMBER_ID, bookId: bookId })
++        })
++        .then(res => res.json())
++        .then(success => {
++            if (success) {
++                showBorrowSuccess();
++                const panel = document.getElementById("copies-" + bookId);
++                if (panel) {
++                    panel.dataset.loaded = "false";
++                    loadCopies(bookId, panel);
++                }
++            } else {
++                alert("?異쒖뿉 ?ㅽ뙣?덉뒿?덈떎. ?뺤? ?곹깭 ?먮뒗 ?異??쒕룄瑜??뺤씤?댁＜?몄슂.");
++            }
++        })
++        .catch(() => alert("?쒕쾭????듭떊 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."));
++    }
+ 
+-        function searchByCategory() {
+-            const category = document.getElementById("category").value;
+-            fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`)
+-                .then(response => response.json())
+-                .then(data => displayResults(data))
+-                .catch(error => alert("寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."));
+-        }
+-    </script>
++    function showBorrowSuccess() {
++        const toast = document.getElementById("toast");
++        toast.classList.add("show");
++        setTimeout(() => toast.classList.remove("show"), 3000);
++    }
++
++    function searchByKeyword() {
++        const keyword = document.getElementById("keyword").value;
++        fetch(`/book/searchBooks?keyword=${encodeURIComponent(keyword)}`)
++            .then(res => res.json())
++            .then(data => displayResults(data))
++            .catch(() => alert("寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."));
++    }
++
++    function searchByCategory() {
++        const category = document.getElementById("category").value;
++        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent(category)}`)
++            .then(res => res.json())
++            .then(data => displayResults(data))
++            .catch(() => alert("寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."));
++    }
++</script>
+ </body>
+-</html>
++</html>
+\ No newline at end of file
+diff --git a/src/main/java/com/back/library/domain/book/controller/BookController.java b/src/main/java/com/back/library/domain/book/controller/BookController.java
+index 519a9e4..7876c53 100644
+--- a/src/main/java/com/back/library/domain/book/controller/BookController.java
++++ b/src/main/java/com/back/library/domain/book/controller/BookController.java
+@@ -1,6 +1,8 @@
+ package com.back.library.domain.book.controller;
+ 
+ import com.back.library.domain.book.entity.Book;
++import com.back.library.domain.book.entity.BookCopy;
++import com.back.library.domain.book.repository.BookCopyRepository;
+ import com.back.library.domain.book.repository.BookRepository;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Controller;
+@@ -17,6 +19,7 @@ import java.util.List;
+ public class BookController {
+ 
+     private final BookRepository bookRepository;
++    private final BookCopyRepository bookCopyRepository;
+ 
+     /**
+      * 寃??UI ?붾㈃ ?뚮뜑留?@@ -43,4 +46,13 @@ public class BookController {
+     public List<Book> searchBooksByCategory(@RequestParam String category) {
+         return bookRepository.findByCategory(category);
+     }
++
++    /**
++     * ?뱀젙 梨낆쓽 ?щ낯 紐⑸줉 議고쉶 (JSON 諛섑솚)
++     */
++    @GetMapping("/copies")
++    @ResponseBody
++    public List<BookCopy> getCopiesByBookId(@RequestParam String bookId) {
++        return bookCopyRepository.findByBookId(bookId);
++    }
+ }
+diff --git a/src/main/java/com/back/library/domain/book/controller/LoanController.java b/src/main/java/com/back/library/domain/book/controller/LoanController.java
+index e1a61e9..b32dc03 100644
+--- a/src/main/java/com/back/library/domain/book/controller/LoanController.java
++++ b/src/main/java/com/back/library/domain/book/controller/LoanController.java
+@@ -1,9 +1,12 @@
+ package com.back.library.domain.book.controller;
+ 
++import com.back.library.domain.book.dto.loan.request.BorrowBookRequest;
++import com.back.library.domain.book.dto.loan.response.BorrowBookResponse;
+ import com.back.library.domain.book.entity.BookCopy;
+ import com.back.library.domain.book.entity.Loan;
+ import com.back.library.domain.book.repository.BookCopyRepository;
+ import com.back.library.domain.book.repository.LoanRepository;
++import com.back.library.domain.book.service.LoanService;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.web.bind.annotation.*;
+ import org.springframework.stereotype.Controller;
+@@ -20,6 +23,7 @@ public class LoanController {
+ 
+     private final BookCopyRepository bookCopyRepository;
+     private final LoanRepository loanRepository;
++    private final LoanService loanService;
+ 
+     /**
+      * 諛섎궔 UI ?붾㈃ ?뚮뜑留?@@ -55,4 +59,14 @@ public class LoanController {
+         }
+         return false;
+     }
++
++    /**
++     * ?꾩꽌 ?異?泥섎━
++     */
++    @PostMapping("/borrowBook")
++    @ResponseBody
++    public boolean borrowBook(@RequestBody BorrowBookRequest request) {
++        BorrowBookResponse response = loanService.createLoan(request, null);
++        return response.isSuccess();
++    }
+ }
+diff --git a/src/main/java/com/back/library/domain/book/dto/loan/request/BorrowBookRequest.java b/src/main/java/com/back/library/domain/book/dto/loan/request/BorrowBookRequest.java
+index 073f707..f500372 100644
+--- a/src/main/java/com/back/library/domain/book/dto/loan/request/BorrowBookRequest.java
++++ b/src/main/java/com/back/library/domain/book/dto/loan/request/BorrowBookRequest.java
+@@ -1,9 +1,11 @@
+ package com.back.library.domain.book.dto.loan.request;
+ 
+-import org.antlr.v4.runtime.misc.NotNull;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
+ 
+-public record BorrowBookRequest (
+-        @NotNull
+-        Long loanId
+-){
+-}
++@Getter
++@NoArgsConstructor
++public class BorrowBookRequest {
++    private String memberId;
++    private String bookId;
++}
+\ No newline at end of file
+diff --git a/src/main/java/com/back/library/domain/book/dto/loan/response/BorrowBookResponse.java b/src/main/java/com/back/library/domain/book/dto/loan/response/BorrowBookResponse.java
+index 41a3508..fc4836c 100644
+--- a/src/main/java/com/back/library/domain/book/dto/loan/response/BorrowBookResponse.java
++++ b/src/main/java/com/back/library/domain/book/dto/loan/response/BorrowBookResponse.java
+@@ -1,4 +1,12 @@
+ package com.back.library.domain.book.dto.loan.response;
+ 
+-public record BorrowBookResponse () {
+-}
++import lombok.AllArgsConstructor;
++import lombok.Getter;
++
++@Getter
++@AllArgsConstructor
++public class BorrowBookResponse {
++    private boolean success;
++    private String message;
++    private String loanId;
++}
+\ No newline at end of file
+diff --git a/src/main/java/com/back/library/domain/book/entity/BookCopy.java b/src/main/java/com/back/library/domain/book/entity/BookCopy.java
+index 2a195d7..3ede42c 100644
+--- a/src/main/java/com/back/library/domain/book/entity/BookCopy.java
++++ b/src/main/java/com/back/library/domain/book/entity/BookCopy.java
+@@ -17,7 +17,7 @@ public class BookCopy {
+     
+     @Id // ??媛믪씠 ?뚯씠釉붿쓽 怨좎쑀 ?앸퀎??PK)?꾩쓣 ?삵빀?덈떎.
+     private String copyId; // ?꾩꽌 ?щ낯 怨좎쑀 ?앸퀎 踰덊샇
+-    
++    private String bookId; // ?대뼡 梨낆쓽 ?щ낯?몄?
+     private String barcode; // 諛붿퐫??踰덊샇
+     private String status; // ?꾩꽌 ?곹깭
+     private String location; // ?쒓? ?꾩튂
+diff --git a/src/main/java/com/back/library/domain/book/repository/BookCopyRepository.java b/src/main/java/com/back/library/domain/book/repository/BookCopyRepository.java
+index 91aee00..9d76b8e 100644
+--- a/src/main/java/com/back/library/domain/book/repository/BookCopyRepository.java
++++ b/src/main/java/com/back/library/domain/book/repository/BookCopyRepository.java
+@@ -5,6 +5,13 @@ import com.back.library.domain.book.entity.BookCopy;
+ import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.stereotype.Repository;
+ 
++import java.util.List;
++import java.util.Optional;
++
+ @Repository
+ public interface BookCopyRepository extends JpaRepository<BookCopy, String> {
++    // ?뱀젙 bookId 以??異쒓??ν븳 ?щ낯 1媛?李얘린
++    Optional<BookCopy> findFirstByBookIdAndStatus(String bookId, String status);
++    // bookId濡??대떦 梨낆쓽 紐⑤뱺 ?щ낯 議고쉶
++    List<BookCopy> findByBookId(String bookId);
+ }
+diff --git a/src/main/java/com/back/library/domain/book/repository/LoanRepository.java b/src/main/java/com/back/library/domain/book/repository/LoanRepository.java
+index 2940d50..ac4ffdd 100644
+--- a/src/main/java/com/back/library/domain/book/repository/LoanRepository.java
++++ b/src/main/java/com/back/library/domain/book/repository/LoanRepository.java
+@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
+ 
+ @Repository
+ public interface LoanRepository extends JpaRepository<Loan, String> {
++    long countByUserIdAndStatus(String userId, String status);
+ }
+diff --git a/src/main/java/com/back/library/domain/book/service/LoanService.java b/src/main/java/com/back/library/domain/book/service/LoanService.java
+index f82e17b..349854f 100644
+--- a/src/main/java/com/back/library/domain/book/service/LoanService.java
++++ b/src/main/java/com/back/library/domain/book/service/LoanService.java
+@@ -1,20 +1,87 @@
+ package com.back.library.domain.book.service;
+ 
+-
+ import com.back.library.domain.book.dto.loan.request.BorrowBookRequest;
+ import com.back.library.domain.book.dto.loan.response.BorrowBookResponse;
++import com.back.library.domain.book.entity.BookCopy;
++import com.back.library.domain.book.entity.Loan;
++import com.back.library.domain.book.repository.BookCopyRepository;
++import com.back.library.domain.book.repository.LoanRepository;
++import com.back.library.domain.user.entity.Member;
++import com.back.library.domain.user.repository.MemberRepository;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+ 
++import java.util.Calendar;
++import java.util.Date;
++import java.util.Optional;
++import java.util.UUID;
++
+ @Service
+ @RequiredArgsConstructor
+ @Transactional(readOnly = true)
+ public class LoanService {
+ 
++    private final BookCopyRepository bookCopyRepository;
++    private final LoanRepository loanRepository;
++    private final MemberRepository memberRepository;
++
+     @Transactional
+     public BorrowBookResponse createLoan(BorrowBookRequest request, Long currentUserId) {
++        String memberId = request.getMemberId();
++        String bookId   = request.getBookId();   // ??copyId?먯꽌 蹂寃?+
++        // 1. ?뚯썝 議고쉶
++        Optional<Member> memberOpt = memberRepository.findById(memberId);
++        if (memberOpt.isEmpty()) {
++            return new BorrowBookResponse(false, "議댁옱?섏? ?딅뒗 ?뚯썝?낅땲??", null);
++        }
++        Member member = memberOpt.get();
++
++        // 2. ?뺤? ?щ? ?뺤씤
++        if (member.isSuspended()) {
++            if (member.getSuspensionEndDate() == null
++                    || new Date().before(member.getSuspensionEndDate())) {
++                return new BorrowBookResponse(false, "?異??뺤? ?곹깭?낅땲??", null);
++            }
++            member.setSuspended(false);
++            member.setSuspensionEndDate(null);
++            memberRepository.save(member);
++        }
++
++        // 3. ?異??쒕룄 ?뺤씤
++        long activeLoans = loanRepository.countByUserIdAndStatus(memberId, "?異쒖쨷");
++        if (activeLoans >= member.getMaxLoanLimit()) {
++            return new BorrowBookResponse(false, "?異??쒕룄瑜?珥덇낵?덉뒿?덈떎.", null);
++        }
++
++        // 4. ?異?媛?ν븳 ?щ낯 ?먮룞 ?좏깮
++        Optional<BookCopy> copyOpt = bookCopyRepository.findFirstByBookIdAndStatus(bookId, "?異쒓???);
++        if (copyOpt.isEmpty()) {
++            return new BorrowBookResponse(false, "?異?媛?ν븳 ?щ낯???놁뒿?덈떎.", null);
++        }
++        BookCopy bookCopy = copyOpt.get();
++
++        // 5. 諛섎궔 湲고븳 怨꾩궛
++        Calendar cal = Calendar.getInstance();
++        Date loanDate = cal.getTime();
++        cal.add(Calendar.DAY_OF_MONTH, member.getLoanPeriod());
++        Date dueDate = cal.getTime();
++
++        // 6. Loan ?앹꽦
++        Loan loan = new Loan();
++        loan.setLoanId(UUID.randomUUID().toString());
++        loan.setUserId(memberId);
++        loan.setCopyId(bookCopy.getCopyId());
++        loan.setLoanDate(loanDate);
++        loan.setDueDate(dueDate);
++        loan.setStatus("?異쒖쨷");
++        loanRepository.save(loan);
++
++        // 7. BookCopy ?곹깭 蹂寃?+        bookCopy.setStatus("?異쒖쨷");
++        bookCopyRepository.save(bookCopy);
+ 
+-        return null;
++        return new BorrowBookResponse(true, "?異쒖씠 ?꾨즺?섏뿀?듬땲??", loan.getLoanId());
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/src/main/java/com/back/library/global/.gitkeep b/src/main/java/com/back/library/global/.gitkeep
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/src/main/java/com/back/library/global/DataInitializer.java b/src/main/java/com/back/library/global/DataInitializer.java
+index 2eaad10..fc861b3 100644
+--- a/src/main/java/com/back/library/global/DataInitializer.java
++++ b/src/main/java/com/back/library/global/DataInitializer.java
+@@ -12,67 +12,327 @@ import org.springframework.boot.CommandLineRunner;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.stereotype.Component;
+ 
++import java.util.Calendar;
+ import java.util.Date;
+ 
+-/**
+- * ?뚯뒪?몄슜 珥덇린 ?곗씠???먮룞 二쇱엯湲?- */
+ @Component
+ public class DataInitializer {
++
+     @Bean
+-    public CommandLineRunner initData(MemberRepository memberRepository, BookCopyRepository bookCopyRepository,
+-            LoanRepository loanRepository, BookRepository bookRepository) {
++    public CommandLineRunner initData(MemberRepository memberRepository,
++                                      BookCopyRepository bookCopyRepository,
++                                      LoanRepository loanRepository,
++                                      BookRepository bookRepository) {
+         return args -> {
+-            // [湲곗〈] 諛섎궔 ?꾩슜 ?곗씠???좎?
+-            Member member = new Member();
+-            member.setUserId("user123");
+-            member.setMaxLoanLimit(3);
+-            member.setLoanPeriod(14);
+-            member.setSuspended(false);
+-            memberRepository.save(member);
+-
+-            BookCopy copy = new BookCopy();
+-            copy.setCopyId("book123");
+-            copy.setBarcode("BC-001");
+-            copy.setStatus("?異쒖쨷");
+-            copy.setLocation("Shelf A");
+-            bookCopyRepository.save(copy);
+-
+-            Loan loan = new Loan();
+-            loan.setLoanId("loan123");
+-            loan.setUserId("user123");
+-            loan.setCopyId("book123");
+-            loan.setLoanDate(new Date());
+-            loan.setStatus("?異쒖쨷");
+-            loanRepository.save(loan);
+-
+-            // [?좉퇋] 寃???뚯뒪?몄슜 ?꾩꽌(Book) ?곗씠???ъ엯
+-            Book book1 = new Book();
+-            book1.setBookId("B-001");
+-            book1.setTitle("?대━?ы꽣? 留덈쾿?ъ쓽 ??);
+-            book1.setAuthor("J.K. 濡ㅻ쭅");
+-            book1.setPublisher("臾명븰?섏꺽");
+-            book1.setIsbn("9788983920677");
+-            book1.setCategory("?뚯꽕");
+-            bookRepository.save(book1);
+-
+-            Book book2 = new Book();
+-            book2.setBookId("B-002");
+-            book2.setTitle("?꾧? 湲곗묠 ?뚮━瑜??댁뿀?붽?");
+-            book2.setAuthor("沅곸삁");
+-            book2.setPublisher("留덇뎄?덉텧?먯궗");
+-            book2.setIsbn("5809");
+-            book2.setCategory("??궗");
+-            bookRepository.save(book2);
+-
+-            Book book3 = new Book();
+-            book3.setBookId("B-003");
+-            book3.setTitle("媛앹껜吏???붿옄???⑦꽩");
+-            book3.setAuthor("源XX");
+-            book3.setPublisher("AI而댄벂?곗쟾?먭났?숇?");
+-            book3.setIsbn("5804");
+-            book3.setCategory("而댄벂?곌났??);
+-            bookRepository.save(book3);
++
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++            // ?좎쭨 ?ы띁
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++            Calendar cal = Calendar.getInstance();
++
++            // 怨쇨굅 ?좎쭨 ?앹꽦 ?ы띁??(?異쒖씪)
++            cal.add(Calendar.DAY_OF_MONTH, -10); Date tenDaysAgo = cal.getTime();
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, -20); Date twentyDaysAgo = cal.getTime();
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, -5);  Date fiveDaysAgo = cal.getTime();
++
++            // 諛섎궔 湲고븳 (誘몃옒)
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, 4);   Date dueIn4  = cal.getTime();
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, 10);  Date dueIn10 = cal.getTime();
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, 25);  Date dueIn25 = cal.getTime();
++
++            // 諛섎궔 湲고븳 (?대? 吏??- ?곗껜)
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, -3);  Date overdue3  = cal.getTime();
++            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, -8);  Date overdue8  = cal.getTime();
++
++            // ?뺤? 醫낅즺??+            cal = Calendar.getInstance();
++            cal.add(Calendar.DAY_OF_MONTH, 7);   Date suspEnd = cal.getTime();
++
++
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++            // ?뚯썝 5紐?+            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++
++            // ???異?媛?? user123 (?쒕룄 3, ?꾩옱 ?異?1沅?
++            Member m1 = new Member();
++            m1.setUserId("user123");
++            m1.setMaxLoanLimit(3);
++            m1.setLoanPeriod(14);
++            m1.setSuspended(false);
++            memberRepository.save(m1);
++
++            // ???異?媛?? hong_gildong (?쒕룄 3, ?꾩옱 ?異?0沅?
++            Member m2 = new Member();
++            m2.setUserId("hong_gildong");
++            m2.setMaxLoanLimit(3);
++            m2.setLoanPeriod(14);
++            m2.setSuspended(false);
++            memberRepository.save(m2);
++
++            // ???異?媛?? prof_lee (援먯닔, ?쒕룄 5, ?꾩옱 ?異?2沅?
++            Member m3 = new Member();
++            m3.setUserId("prof_lee");
++            m3.setMaxLoanLimit(5);
++            m3.setLoanPeriod(30);
++            m3.setSuspended(false);
++            memberRepository.save(m3);
++
++            // ???異?遺덇?: limit_user (?쒕룄 3, ?꾩옱 ?異?3沅????쒕룄 珥덇낵)
++            Member m4 = new Member();
++            m4.setUserId("limit_user");
++            m4.setMaxLoanLimit(3);
++            m4.setLoanPeriod(14);
++            m4.setSuspended(false);
++            memberRepository.save(m4);
++
++            // ???異?遺덇?: suspended_user (?뺤? 以? 7?????댁젣)
++            Member m5 = new Member();
++            m5.setUserId("suspended_user");
++            m5.setMaxLoanLimit(3);
++            m5.setLoanPeriod(14);
++            m5.setSuspended(true);
++            m5.setSuspensionEndDate(suspEnd);
++            memberRepository.save(m5);
++
++
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++            // ?꾩꽌 30沅?+ ?щ낯 (梨낅떦 1~3媛?
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++
++            // ?? ?뚯꽕 ?????????????????????????????????????????
++
++            // B-001 ?대━?ы꽣 (?щ낯 3媛?
++            saveBook(bookRepository, "B-001", "?대━?ы꽣? 留덈쾿?ъ쓽 ??, "J.K. 濡ㅻ쭅", "臾명븰?섏꺽", "9788983920677", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-001", "B-001", "BC-001", "?異쒖쨷",   "1F-A01");
++            saveCopy(bookCopyRepository, "C-002", "B-001", "BC-002", "?異쒓???, "1F-A01");
++            saveCopy(bookCopyRepository, "C-003", "B-001", "BC-003", "?異쒓???, "1F-A01");
++
++            // B-002 梨꾩떇二쇱쓽??(?щ낯 2媛?
++            saveBook(bookRepository, "B-002", "梨꾩떇二쇱쓽??, "?쒓컯", "李쎈퉬", "9788936433598", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-004", "B-002", "BC-004", "?異쒓???, "1F-A02");
++            saveCopy(bookCopyRepository, "C-005", "B-002", "BC-005", "?異쒖쨷",   "1F-A02");
++
++            // B-003 82?꾩깮 源吏??(?щ낯 2媛?
++            saveBook(bookRepository, "B-003", "82?꾩깮 源吏??, "議곕궓二?, "誘쇱쓬??, "9788937473135", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-006", "B-003", "BC-006", "?異쒓???, "1F-A03");
++            saveCopy(bookCopyRepository, "C-007", "B-003", "BC-007", "?異쒓???, "1F-A03");
++
++            // B-004 ?꾨が??(?щ낯 1媛?
++            saveBook(bookRepository, "B-004", "?꾨が??, "?먯썝??, "李쎈퉬", "9788936434267", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-008", "B-004", "BC-008", "?異쒖쨷", "1F-A04");
++
++            // B-005 ?꾩쟾???됰났 (?щ낯 1媛?
++            saveBook(bookRepository, "B-005", "?꾩쟾???됰났", "?뺤쑀??, "??됰굹臾?, "9791191071108", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-009", "B-005", "BC-009", "?異쒓???, "1F-A05");
++
++            // B-006 ?꾧? 湲곗묠 ?뚮━瑜??댁뿀?붽? (?щ낯 1媛?
++            saveBook(bookRepository, "B-006", "?꾧? 湲곗묠 ?뚮━瑜??댁뿀?붽?", "沅곸삁", "留덇뎄?덉텧?먯궗", "9791100005809", "?뚯꽕");
++            saveCopy(bookCopyRepository, "C-010", "B-006", "BC-010", "?異쒓???, "1F-A06");
++
++            // ?? 而댄벂?곌났????????????????????????????????????
++
++            // B-007 媛앹껜吏???붿옄???⑦꽩 (?щ낯 3媛?
++            saveBook(bookRepository, "B-007", "媛앹껜吏???붿옄???⑦꽩", "Erich Gamma ??, "?꾨줈?띾??붿뼱", "9791158390754", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-011", "B-007", "BC-011", "?異쒓???, "2F-C01");
++            saveCopy(bookCopyRepository, "C-012", "B-007", "BC-012", "?異쒖쨷",   "2F-C01");
++            saveCopy(bookCopyRepository, "C-013", "B-007", "BC-013", "?異쒓???, "2F-C01");
++
++            // B-008 Clean Code (?щ낯 2媛?
++            saveBook(bookRepository, "B-008", "Clean Code", "Robert C. Martin", "?몄궗?댄듃", "9788966260959", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-014", "B-008", "BC-014", "?異쒖쨷",   "2F-C02");
++            saveCopy(bookCopyRepository, "C-015", "B-008", "BC-015", "?異쒓???, "2F-C02");
++
++            // B-009 ?먮컮???뺤꽍 (?щ낯 3媛?
++            saveBook(bookRepository, "B-009", "?먮컮???뺤꽍", "?④턿??, "?꾩슦異쒗뙋", "9788994492032", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-016", "B-009", "BC-016", "?異쒓???, "2F-C03");
++            saveCopy(bookCopyRepository, "C-017", "B-009", "BC-017", "?異쒓???, "2F-C03");
++            saveCopy(bookCopyRepository, "C-018", "B-009", "BC-018", "?異쒖쨷",   "2F-C03");
++
++            // B-010 ?댁쁺泥댁젣 (?щ낯 2媛?
++            saveBook(bookRepository, "B-010", "?댁쁺泥댁젣", "Abraham Silberschatz", "?쇱뒪?몃턿", "9791185475219", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-019", "B-010", "BC-019", "?異쒓???, "2F-C04");
++            saveCopy(bookCopyRepository, "C-020", "B-010", "BC-020", "?異쒓???, "2F-C04");
++
++            // B-011 而댄벂???ㅽ듃?뚰겕 (?щ낯 1媛?
++            saveBook(bookRepository, "B-011", "而댄벂???ㅽ듃?뚰겕", "James F. Kurose", "?쇱뒪?몃턿", "9791185475387", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-021", "B-011", "BC-021", "?異쒓???, "2F-C05");
++
++            // B-012 ?뚭퀬由ъ쬁 臾몄젣 ?닿껐 ?꾨왂 (?щ낯 2媛?
++            saveBook(bookRepository, "B-012", "?뚭퀬由ъ쬁 臾몄젣 ?닿껐 ?꾨왂", "援ъ쥌留?, "?몄궗?댄듃", "9788966260546", "而댄벂?곌났??);
++            saveCopy(bookCopyRepository, "C-022", "B-012", "BC-022", "?異쒖쨷",   "2F-C06");
++            saveCopy(bookCopyRepository, "C-023", "B-012", "BC-023", "?異쒓???, "2F-C06");
++
++            // ?? ??궗 ?????????????????????????????????????????
++
++            // B-013 ?ы뵾?붿뒪 (?щ낯 3媛?
++            saveBook(bookRepository, "B-013", "?ы뵾?붿뒪", "?좊컻 ?섎씪由?, "源?곸궗", "9788934972464", "??궗");
++            saveCopy(bookCopyRepository, "C-024", "B-013", "BC-024", "?異쒓???, "1F-B01");
++            saveCopy(bookCopyRepository, "C-025", "B-013", "BC-025", "?異쒖쨷",   "1F-B01");
++            saveCopy(bookCopyRepository, "C-026", "B-013", "BC-026", "?異쒓???, "1F-B01");
++
++            // B-014 珥앷퇏??(?щ낯 2媛?
++            saveBook(bookRepository, "B-014", "珥앷퇏??, "?щ젅???ㅼ씠?꾨が??, "臾명븰?ъ긽??, "9788970128474", "??궗");
++            saveCopy(bookCopyRepository, "C-027", "B-014", "BC-027", "?異쒓???, "1F-B02");
++            saveCopy(bookCopyRepository, "C-028", "B-014", "BC-028", "?異쒓???, "1F-B02");
++
++            // B-015 議곗꽑?뺤“?ㅻ줉 (?щ낯 1媛?
++            saveBook(bookRepository, "B-015", "議곗꽑?뺤“?ㅻ줉", "?댁꽦臾?, "?대┝", "9788952207135", "??궗");
++            saveCopy(bookCopyRepository, "C-029", "B-015", "BC-029", "?異쒓???, "1F-B03");
++
++            // ?? 怨쇳븰 ?????????????????????????????????????????
++
++            // B-016 ?닿린???좎쟾??(?щ낯 2媛?
++            saveBook(bookRepository, "B-016", "?닿린???좎쟾??, "由ъ쿂???꾪궓??, "?꾩쑀臾명솕??, "9788932473901", "怨쇳븰");
++            saveCopy(bookCopyRepository, "C-030", "B-016", "BC-030", "?異쒓???, "1F-D01");
++            saveCopy(bookCopyRepository, "C-031", "B-016", "BC-031", "?異쒖쨷",   "1F-D01");
++
++            // B-017 肄붿뒪紐⑥뒪 (?щ낯 2媛?
++            saveBook(bookRepository, "B-017", "肄붿뒪紐⑥뒪", "移??몄씠嫄?, "?ъ씠?몄뒪遺곸뒪", "9788983710956", "怨쇳븰");
++            saveCopy(bookCopyRepository, "C-032", "B-017", "BC-032", "?異쒓???, "1F-D02");
++            saveCopy(bookCopyRepository, "C-033", "B-017", "BC-033", "?異쒓???, "1F-D02");
++
++            // B-018 ?뚯씤留뚯쓽 臾쇰━??媛뺤쓽 (?щ낯 1媛?
++            saveBook(bookRepository, "B-018", "?뚯씤留뚯쓽 臾쇰━??媛뺤쓽", "由ъ쿂???뚯씤留?, "?뱀궛", "9788959408825", "怨쇳븰");
++            saveCopy(bookCopyRepository, "C-034", "B-018", "BC-034", "?異쒓???, "1F-D03");
++
++            // ?? 寃쎌쁺/寃쎌젣 ????????????????????????????????????
++
++            // B-019 由??ㅽ??몄뾽 (?щ낯 2媛?
++            saveBook(bookRepository, "B-019", "由??ㅽ??몄뾽", "?먮┃ 由ъ뒪", "?몄궗?댄듃", "9788966260287", "寃쎌쁺");
++            saveCopy(bookCopyRepository, "C-035", "B-019", "BC-035", "?異쒓???, "3F-E01");
++            saveCopy(bookCopyRepository, "C-036", "B-019", "BC-036", "?異쒓???, "3F-E01");
++
++            // B-020 ?쒕줈 ????(?щ낯 1媛?
++            saveBook(bookRepository, "B-020", "?쒕줈 ????, "?쇳꽣 ??, "?쒓뎅寃쎌젣?좊Ц", "9788947540728", "寃쎌쁺");
++            saveCopy(bookCopyRepository, "C-037", "B-020", "BC-037", "?異쒖쨷", "3F-E02");
++
++            // B-021 ?쏆? (?щ낯 2媛?
++            saveBook(bookRepository, "B-021", "?쏆?", "由ъ쿂???덈윭", "由щ뜑?ㅻ턿", "9788990994288", "寃쎌쁺");
++            saveCopy(bookCopyRepository, "C-038", "B-021", "BC-038", "?異쒓???, "3F-E03");
++            saveCopy(bookCopyRepository, "C-039", "B-021", "BC-039", "?異쒓???, "3F-E03");
++
++            // ?? 泥좏븰 ?????????????????????????????????????????
++
++            // B-022 ?뚰겕?쇳뀒?ㅼ쓽 蹂紐?(?щ낯 1媛?
++            saveBook(bookRepository, "B-022", "?뚰겕?쇳뀒?ㅼ쓽 蹂紐?, "?뚮씪??, "臾몄삁異쒗뙋??, "9788931002119", "泥좏븰");
++            saveCopy(bookCopyRepository, "C-040", "B-022", "BC-040", "?異쒓???, "3F-F01");
++
++            // B-023 ?덉껜??留?(?щ낯 2媛?
++            saveBook(bookRepository, "B-023", "?덉껜??留?, "?꾨━?쒕━???덉껜", "?쇳샇誘몃뵒??, "9788977000476", "泥좏븰");
++            saveCopy(bookCopyRepository, "C-041", "B-023", "BC-041", "?異쒓???, "3F-F02");
++            saveCopy(bookCopyRepository, "C-042", "B-023", "BC-042", "?異쒖쨷",   "3F-F02");
++
++            // B-024 ?뺤쓽? 臾댁뾿?멸? (?щ낯 3媛?
++            saveBook(bookRepository, "B-024", "?뺤쓽? 臾댁뾿?멸?", "留덉씠???뚮뜽", "源?곸궗", "9788934935346", "泥좏븰");
++            saveCopy(bookCopyRepository, "C-043", "B-024", "BC-043", "?異쒓???, "3F-F03");
++            saveCopy(bookCopyRepository, "C-044", "B-024", "BC-044", "?異쒓???, "3F-F03");
++            saveCopy(bookCopyRepository, "C-045", "B-024", "BC-045", "?異쒖쨷",   "3F-F03");
++
++            // ?? ?먭린怨꾨컻 ?????????????????????????????????????
++
++            // B-025 誘몃씪??紐⑤떇 (?щ낯 1媛?
++            saveBook(bookRepository, "B-025", "誘몃씪??紐⑤떇", "???섎줈??, "?쒕튆鍮꾩쫰", "9791162240144", "?먭린怨꾨컻");
++            saveCopy(bookCopyRepository, "C-046", "B-025", "BC-046", "?異쒓???, "3F-G01");
++
++            // B-026 ?꾩＜ ?묒? ?듦?????(?щ낯 2媛?
++            saveBook(bookRepository, "B-026", "?꾩＜ ?묒? ?듦?????, "?쒖엫???대━??, "鍮꾩쫰?덉뒪遺곸뒪", "9791165213312", "?먭린怨꾨컻");
++            saveCopy(bookCopyRepository, "C-047", "B-026", "BC-047", "?異쒓???, "3F-G02");
++            saveCopy(bookCopyRepository, "C-048", "B-026", "BC-048", "?異쒓???, "3F-G02");
++
++            // B-027 洹몃┸ (?щ낯 1媛?
++            saveBook(bookRepository, "B-027", "洹몃┸", "?ㅼ젅???뷀겕?뚯뒪", "鍮꾩쫰?덉뒪遺곸뒪", "9791165210502", "?먭린怨꾨컻");
++            saveCopy(bookCopyRepository, "C-049", "B-027", "BC-049", "?異쒖쨷", "3F-G03");
++
++            // ?? ?섑븰 ?????????????????????????????????????????
++
++            // B-028 ?섑븰???꾨쫫?ㅼ? (?щ낯 2媛?
++            saveBook(bookRepository, "B-028", "?섑븰???꾨쫫?ㅼ?", "?ㅺ뎔", "?몄궗?댄듃", "9788966261840", "?섑븰");
++            saveCopy(bookCopyRepository, "C-050", "B-028", "BC-050", "?異쒓???, "2F-H01");
++            saveCopy(bookCopyRepository, "C-051", "B-028", "BC-051", "?異쒓???, "2F-H01");
++
++            // B-029 ?뺣쪧濡좎쟻 ?ш퀬 (?щ낯 1媛?
++            saveBook(bookRepository, "B-029", "?뺣쪧濡좎쟻 ?ш퀬", "?댁긽??, "?ъ씠?몄뒪遺곸뒪", "9788983717191", "?섑븰");
++            saveCopy(bookCopyRepository, "C-052", "B-029", "BC-052", "?異쒓???, "2F-H02");
++
++            // B-030 ?섑븰 洹??(?щ낯 2媛?
++            saveBook(bookRepository, "B-030", "?섑븰 洹??, "?쒖뒪 留덇렇?꾩뒪 ?붿껴?ㅻ쿋瑜닿굅", "鍮꾨！??, "9788949104195", "?섑븰");
++            saveCopy(bookCopyRepository, "C-053", "B-030", "BC-053", "?異쒓???, "2F-H03");
++            saveCopy(bookCopyRepository, "C-054", "B-030", "BC-054", "?異쒓???, "2F-H03");
++
++
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++            // ?異?湲곕줉
++            // ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
++
++            // user123: 1沅??異쒖쨷 (?대━?ы꽣 C-001)
++            saveLoan(loanRepository, "L-001", "user123", "C-001", tenDaysAgo, dueIn4,  null,      "?異쒖쨷");
++
++            // hong_gildong: 諛섎궔 ?꾨즺 湲곕줉 2媛?+            saveLoan(loanRepository, "L-002", "hong_gildong", "C-005", twentyDaysAgo, overdue8, twentyDaysAgo, "諛섎궔?꾨즺");
++            saveLoan(loanRepository, "L-003", "hong_gildong", "C-014", twentyDaysAgo, overdue8, fiveDaysAgo,   "諛섎궔?꾨즺");
++
++            // prof_lee: 2沅??異쒖쨷
++            saveLoan(loanRepository, "L-004", "prof_lee", "C-012", fiveDaysAgo,  dueIn25, null, "?異쒖쨷");
++            saveLoan(loanRepository, "L-005", "prof_lee", "C-031", tenDaysAgo,   dueIn10, null, "?異쒖쨷");
++
++            // limit_user: 3沅??異쒖쨷 ???쒕룄 珥덇낵 ?곹깭
++            saveLoan(loanRepository, "L-006", "limit_user", "C-008", tenDaysAgo,  dueIn4,  null, "?異쒖쨷");
++            saveLoan(loanRepository, "L-007", "limit_user", "C-018", fiveDaysAgo, dueIn10, null, "?異쒖쨷");
++            saveLoan(loanRepository, "L-008", "limit_user", "C-022", fiveDaysAgo, dueIn10, null, "?異쒖쨷");
++
++            // suspended_user: ?곗껜濡??명빐 ?뺤???湲곕줉 (諛섎궔?꾨즺吏留??뺤????좎?)
++            saveLoan(loanRepository, "L-009", "suspended_user", "C-037", twentyDaysAgo, overdue3, fiveDaysAgo, "諛섎궔?꾨즺");
++
++            // 異붽? 諛섎궔?꾨즺 湲곕줉??+            saveLoan(loanRepository, "L-010", "user123",     "C-020", twentyDaysAgo, overdue8, tenDaysAgo,   "諛섎궔?꾨즺");
++            saveLoan(loanRepository, "L-011", "hong_gildong","C-045", twentyDaysAgo, overdue8, twentyDaysAgo,"諛섎궔?꾨즺");
++            saveLoan(loanRepository, "L-012", "prof_lee",    "C-033", twentyDaysAgo, overdue8, fiveDaysAgo,  "諛섎궔?꾨즺");
++
+         };
+     }
+-}
++
++    // ?? ?ы띁 硫붿꽌???????????????????????????????????????????????????
++
++    private void saveBook(BookRepository repo, String id, String title, String author,
++                          String publisher, String isbn, String category) {
++        Book b = new Book();
++        b.setBookId(id);
++        b.setTitle(title);
++        b.setAuthor(author);
++        b.setPublisher(publisher);
++        b.setIsbn(isbn);
++        b.setCategory(category);
++        repo.save(b);
++    }
++
++    private void saveCopy(BookCopyRepository repo, String copyId, String bookId,
++                          String barcode, String status, String location) {
++        BookCopy c = new BookCopy();
++        c.setCopyId(copyId);
++        c.setBookId(bookId);
++        c.setBarcode(barcode);
++        c.setStatus(status);
++        c.setLocation(location);
++        repo.save(c);
++    }
++
++    private void saveLoan(LoanRepository repo, String loanId, String userId, String copyId,
++                          Date loanDate, Date dueDate, Date returnDate, String status) {
++        Loan l = new Loan();
++        l.setLoanId(loanId);
++        l.setUserId(userId);
++        l.setCopyId(copyId);
++        l.setLoanDate(loanDate);
++        l.setDueDate(dueDate);
++        l.setReturnDate(returnDate);
++        l.setStatus(status);
++        repo.save(l);
++    }
++}
+\ No newline at end of file

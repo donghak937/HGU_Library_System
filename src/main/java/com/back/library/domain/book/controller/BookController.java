@@ -3,10 +3,14 @@ package com.back.library.domain.book.controller;
 import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.repository.BookCopyRepository;
-import com.back.library.domain.book.repository.BookRepository;
+import com.back.library.domain.book.strategy.BookSearchStrategy;
+import com.back.library.domain.book.strategy.CategorySearchStrategy;
+import com.back.library.domain.book.strategy.KeywordSearchStrategy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import com.back.library.domain.book.repository.BookRepository;
 
 import java.util.List;
 
@@ -18,8 +22,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookController {
 
-    private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final KeywordSearchStrategy keywordSearchStrategy;
+    private final CategorySearchStrategy categorySearchStrategy;
+    private BookSearchStrategy searchStrategy;
+    private final BookRepository bookRepository;
+
+    public void setSearchStrategy(BookSearchStrategy strategy) {
+        this.searchStrategy = strategy;
+    }
 
     /**
      * 검색 UI 화면 렌더링
@@ -35,7 +46,8 @@ public class BookController {
     @GetMapping("/searchBooks")
     @ResponseBody
     public List<Book> searchBooks(@RequestParam String keyword) {
-        return bookRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
+        setSearchStrategy(keywordSearchStrategy);
+        return searchStrategy.search(keyword);
     }
 
     /**
@@ -44,7 +56,19 @@ public class BookController {
     @GetMapping("/searchBooksByCategory")
     @ResponseBody
     public List<Book> searchBooksByCategory(@RequestParam String category) {
-        return bookRepository.findByCategory(category);
+        setSearchStrategy(categorySearchStrategy);
+        return searchStrategy.search(category);
+    }
+
+    /**
+     * 특정 도서 상세 정보 조회 (JSON 반환)
+     */
+    @GetMapping("/details")
+    @ResponseBody
+    public ResponseEntity<Book> viewBookDetails(@RequestParam String bookId) {
+        return bookRepository.findById(bookId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

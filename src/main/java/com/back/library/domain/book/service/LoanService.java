@@ -48,7 +48,8 @@ public class LoanService {
                         book.getAuthor(),
                         copy.getBarcode(),
                         loan.getLoanDate(),
-                        loan.getDueDate()
+                        loan.getDueDate(),
+                        loan.getExtensionCount()
                     ));
                 }
             }

@@ -22,9 +22,17 @@
         /* 책 카드 */
         .book-item { background: #ecf0f1; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #3498db; overflow: hidden; }
         .book-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .book-info-wrap { flex: 1; }
+        .book-info-wrap { flex: 1; cursor: pointer; }
+        .book-info-wrap:hover .book-title { color: #2980b9; }
         .book-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; color: #2c3e50; }
         .book-info  { margin: 0; color: #7f8c8d; font-size: 0.9em; }
+
+        .detail-panel { display: none; margin-top: 20px; padding: 18px; border-radius: 8px; background: #f8fbff; border: 1px solid #cfe3f5; }
+        .detail-panel.open { display: block; }
+        .detail-panel h2 { margin: 0 0 12px 0; color: #2c3e50; font-size: 1.2em; }
+        .detail-grid { display: grid; grid-template-columns: 100px 1fr; gap: 8px 12px; color: #34495e; font-size: 0.92em; }
+        .detail-label { font-weight: bold; color: #2c3e50; }
+        .availability-summary { margin-top: 14px; padding-top: 12px; border-top: 1px solid #d8e8f5; color: #34495e; font-size: 0.92em; }
 
         /* 사본 토글 버튼 */
         .btn-toggle { width: auto; padding: 6px 12px; background-color: #7f8c8d; border-radius: 6px; font-size: 0.8em; white-space: nowrap; margin-top: 0; color: white; border: none; font-weight: bold; cursor: pointer; }
@@ -118,6 +126,7 @@
         <button class="btn-return" onclick="window.location.href='/loan/ReturnBookUI'">내 대출/반납 페이지로 이동</button>
     </div>
 
+    <div id="book-detail" class="detail-panel"></div>
     <div id="results"></div>
 </div>
 
@@ -150,7 +159,10 @@
 
     function displayResults(books) {
         const resultsDiv = document.getElementById("results");
+        const detailDiv = document.getElementById("book-detail");
         resultsDiv.innerHTML = "";
+        detailDiv.classList.remove("open");
+        detailDiv.innerHTML = "";
 
         if (books.length === 0) {
             resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>검색 결과가 없습니다.</p>";
@@ -162,7 +174,7 @@
             bookDiv.className = "book-item";
             bookDiv.innerHTML = `
                 <div class="book-header">
-                    <div class="book-info-wrap">
+                    <div class="book-info-wrap" onclick="viewBookDetails('${book.bookId}')">
                         <p class="book-title">📘 ${book.title}</p>
                         <p class="book-info">저자: ${book.author} | 출판사: ${book.publisher}</p>
                         <p class="book-info">분류: ${book.category} | ISBN: ${book.isbn}</p>
@@ -175,6 +187,59 @@
             `;
             resultsDiv.appendChild(bookDiv);
         });
+    }
+
+    function viewBookDetails(bookId) {
+        fetch(`/book/details?bookId=${encodeURIComponent(bookId)}`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Book not found");
+                }
+                return res.json();
+            })
+            .then(book => {
+                displayBookDetail(book);
+            })
+            .catch(() => alert("도서 상세 정보를 불러오지 못했습니다."));
+    }
+
+    function displayBookDetail(book) {
+        const detailDiv = document.getElementById("book-detail");
+        detailDiv.classList.add("open");
+        detailDiv.innerHTML = `
+            <h2>${book.title}</h2>
+            <div class="detail-grid">
+                <span class="detail-label">Book ID</span><span>${book.bookId}</span>
+                <span class="detail-label">Author</span><span>${book.author}</span>
+                <span class="detail-label">Publisher</span><span>${book.publisher}</span>
+                <span class="detail-label">ISBN</span><span>${book.isbn}</span>
+                <span class="detail-label">Category</span><span>${book.category}</span>
+            </div>
+            <div id="availability-${book.bookId}" class="availability-summary">대출 가능 상태를 불러오는 중...</div>
+        `;
+        showAvailabilityStatus(book.bookId);
+        detailDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function showAvailabilityStatus(bookId) {
+        const availabilityDiv = document.getElementById("availability-" + bookId);
+        fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
+            .then(res => res.json())
+            .then(copies => {
+                if (copies.length === 0) {
+                    availabilityDiv.textContent = "등록된 사본이 없습니다.";
+                    return;
+                }
+
+                const availableCount = copies.filter(copy => copy.status === "대출가능").length;
+                availabilityDiv.innerHTML = `
+                    <span class="detail-label">Availability</span>
+                    <span>대출 가능 ${availableCount}권 / 전체 ${copies.length}권</span>
+                `;
+            })
+            .catch(() => {
+                availabilityDiv.textContent = "대출 가능 상태를 불러오지 못했습니다.";
+            });
     }
 
     function toggleCopies(bookId, btn) {

@@ -63,6 +63,11 @@
         #logout-btn:hover {
             background-color: #c0392b;
         }
+        .btn-group { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .btn-extend { width: auto; padding: 8px 16px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-size: 0.9em; font-weight: bold; cursor: pointer; white-space: nowrap; margin-top: 0; }
+        .btn-extend:hover { background-color: #2471a3; }
+        .btn-extend:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .badge-extended { background: #fef9e7; color: #d68910; }
         #toast { top: 70px; } /* 뱃지 아래에 뜨도록 조정 */
 
         .nav-links { text-align: center; margin-top: 20px; }
@@ -142,19 +147,24 @@
                 loans.forEach(loan => {
                     const loanDiv = document.createElement("div");
                     loanDiv.className = "book-item";
-                    
-                    const overdueBadge = new Date() > new Date(loan.dueDate) 
-                        ? `<span class="badge badge-due">연체됨</span>` 
-                        : "";
+
+                    const isOverdue = new Date() > new Date(loan.dueDate);
+                    const overdueBadge = isOverdue ? `<span class="badge badge-due">연체됨</span>` : "";
+                    const extendedBadge = loan.extensionCount > 0
+                        ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
+                    const extendDisabled = (isOverdue || loan.extensionCount >= 1) ? "disabled" : "";
 
                     loanDiv.innerHTML = `
                         <div class="book-header">
                             <div class="book-info-wrap">
-                                <p class="book-title">📖 ${loan.bookTitle} ${overdueBadge}</p>
+                                <p class="book-title">📖 ${loan.bookTitle} ${overdueBadge} ${extendedBadge}</p>
                                 <p class="book-info">저자: ${loan.author} | 바코드: ${loan.barcode}</p>
                                 <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
                             </div>
-                            <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
+                            <div class="btn-group">
+                                <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
+                                <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
+                            </div>
                         </div>
                     `;
                     resultsDiv.appendChild(loanDiv);
@@ -163,6 +173,30 @@
             .catch(() => {
                 resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
             });
+    }
+
+    function extendLoan(loanId) {
+        if (!confirm("이 도서를 7일 연장하시겠습니까?")) return;
+
+        fetch(`/loan/extendLoan?loanId=${encodeURIComponent(loanId)}`, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const toast = document.getElementById("toast");
+                toast.textContent = "📅 " + data.message;
+                toast.classList.add("show");
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                    toast.textContent = "✅ 반납이 완료되었습니다!"; // 원래대로 복구
+                }, 3000);
+                fetchMyLoans();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(() => alert("서버 통신 중 오류가 발생했습니다."));
     }
 
     function returnBook(loanId) {
