@@ -9,6 +9,10 @@ import com.back.library.domain.book.repository.BookCopyRepository;
 import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.LoanRepository;
 import com.back.library.domain.book.dto.loan.response.MyLoanResponse;
+import com.back.library.domain.book.state.BorrowedState;
+import com.back.library.domain.book.state.LoanState;
+import com.back.library.domain.book.state.OverdueState;
+import com.back.library.domain.book.state.ReturnedState;
 import com.back.library.domain.user.entity.Member;
 import com.back.library.domain.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,12 +53,25 @@ public class LoanService {
                         copy.getBarcode(),
                         loan.getLoanDate(),
                         loan.getDueDate(),
-                        loan.getExtensionCount()
+                        loan.getExtensionCount(),
+                        getLoanState(loan).calculateOverdueDays(loan)
                     ));
                 }
             }
         }
         return result;
+    }
+
+    private LoanState getLoanState(Loan loan) {
+        if (loan.getReturnDate() != null) {
+            return new ReturnedState();
+        }
+
+        if (loan.getDueDate() != null && loan.getDueDate().before(new Date())) {
+            return new OverdueState();
+        }
+
+        return new BorrowedState();
     }
 
     @Transactional

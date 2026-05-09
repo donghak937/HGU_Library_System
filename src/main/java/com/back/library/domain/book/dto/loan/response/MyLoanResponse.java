@@ -16,4 +16,5 @@ public class MyLoanResponse {
     private Date loanDate;
     private Date dueDate;
     private int extensionCount;
+    private int overdueDays;
 }
