@@ -111,22 +111,44 @@
     <div id="results"></div>
 </div>
 
+<script src="/static/js/auth.js"></script>
 <script>
-    // 토큰 파싱
-    const token = localStorage.getItem("jwtToken");
-    if (!token) {
-        alert("로그인이 필요합니다.");
-        window.location.href = "/account/loginUI";
-    }
-
+    // 토큰 파싱하여 사용자 정보 추출
     function parseJwt(token) {
         const base64Payload = token.split(".")[1];
         return JSON.parse(atob(base64Payload));
     }
 
-    const payload = parseJwt(token);
-    const CURRENT_MEMBER_ID = payload.username;
-    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
+    function authHeader() {
+
+        const token =
+            localStorage.getItem("accessToken");
+
+        if (!token) return {};
+
+        return {
+            "Authorization": "Bearer " + token
+        };
+    }
+
+    const token = localStorage.getItem("accessToken");
+
+    let CURRENT_MEMBER_ID = null;
+
+    if (token) {
+        const payload = parseJwt(token);
+        CURRENT_MEMBER_ID = payload.username;
+
+        document.getElementById("user-name").textContent =
+            "👤 " + CURRENT_MEMBER_ID;
+    } else {
+        document.getElementById("user-badge").innerHTML = `
+            <button id="logout-btn"
+                    onclick="window.location.href='/account/loginUI'">
+                로그인
+            </button>
+        `;
+    }
 
     // ── 검색 결과 표시 ──────────────────────────────────────
 
@@ -276,7 +298,10 @@
     function requestBorrowCopy(bookId, panelBookId) {
         fetch("/loan/borrowBook", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeader()
+            },
             body: JSON.stringify({ memberId: CURRENT_MEMBER_ID, bookId: bookId })
         })
         .then(res => res.json())
@@ -295,7 +320,8 @@
 
     function requestReserve(bookId, panelBookId) {
         fetch(`/book/reserveBook?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}&bookId=${encodeURIComponent(bookId)}`, {
-            method: "POST"
+            method: "POST",
+            headers: authHeader()
         })
         .then(res => res.json())
         .then(data => {
@@ -347,11 +373,19 @@
     }
 
     function logout() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        alert("로그아웃 되었습니다.");
-        window.location.href = "/account/loginUI";
+        fetch("/account/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+        .then(() => {
+
+            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+
+            alert("로그아웃 되었습니다.");
+
+            window.location.replace("/account/loginUI");
+        });
     }
 </script>
 </body>

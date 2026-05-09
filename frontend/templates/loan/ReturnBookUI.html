@@ -85,8 +85,27 @@
 </div>
 
 <script>
-    const CURRENT_MEMBER_ID = "user123";
-    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
+    // 현재 로그인된 유저를 user123으로 가정 (SearchBookUI와 동일)
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/account/loginUI";
+    }
+
+    function parseJwt(token) {
+
+        const base64Payload = token.split(".")[1];
+
+        return JSON.parse(atob(base64Payload));
+    }
+
+    const payload = parseJwt(token);
+
+    const CURRENT_MEMBER_ID = payload.username;
+
+    document.getElementById("user-name").textContent =
+    "👤 " + CURRENT_MEMBER_ID;
 
     window.onload = function() {
         fetchMyLoans();
@@ -111,7 +130,11 @@
         const resultsDiv = document.getElementById("results");
         resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
 
-        fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`)
+        fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
             .then(res => res.json())
             .then(loans => {
                 resultsDiv.innerHTML = "";
@@ -161,7 +184,10 @@
     function extendLoan(loanId) {
         if (!confirm("이 도서를 7일 연장하시겠습니까?")) return;
 
-        fetch(`/loan/extendLoan?loanId=${encodeURIComponent(loanId)}`, { method: "POST" })
+       fetch(`/loan/extendLoan?loanId=${encodeURIComponent(loanId)}`, {
+            method: "POST",
+            headers: authHeader() //토큰 인증 추가
+        })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -177,7 +203,10 @@
     function returnBook(loanId) {
         if (!confirm("이 도서를 반납하시겠습니까?")) return;
 
-        fetch(`/loan/returnBook?loanId=${encodeURIComponent(loanId)}`, { method: "POST" })
+        fetch(`/loan/returnBook?loanId=${encodeURIComponent(loanId)}`, {
+            method: "POST",
+            headers: authHeader() //토큰 인증 추가
+        })
             .then(res => res.json())
             .then(success => {
                 if (success) {
@@ -191,12 +220,14 @@
             .catch(() => alert("서버 통신 중 오류가 발생했습니다."));
     }
 
-    // ── 예약 목록 ────────────────────────────────────────────
+    // ── 예약 ────
 
     function fetchMyReservations() {
         const div = document.getElementById("reservation-results");
 
-        fetch(`/book/myReservations?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`)
+        fetch(`/book/myReservations?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
+            headers: authHeader()
+        })
             .then(res => res.json())
             .then(reservations => {
                 if (reservations.length === 0) {
@@ -222,7 +253,10 @@
     function cancelReservation(reservationId) {
         if (!confirm("예약을 취소하시겠습니까?")) return;
 
-        fetch(`/book/cancelReservation?reservationId=${encodeURIComponent(reservationId)}`, { method: "POST" })
+        fetch(`/book/cancelReservation?reservationId=${encodeURIComponent(reservationId)}`, {
+            method: "POST",
+            headers: authHeader()
+        })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -243,13 +277,34 @@
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3000);
     }
+    //토큰 인증용
+    function authHeader() {
+
+        const token =
+            localStorage.getItem("accessToken");
+
+        if (!token) return {};
+
+        return {
+            "Authorization": "Bearer " + token
+        };
+    }
+
 
     function logout() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        alert("로그아웃 되었습니다.");
-        window.location.href = "/account/loginUI";
+        fetch("/account/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+        .then(() => {
+
+            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+
+            alert("로그아웃 되었습니다.");
+
+            window.location.replace("/account/loginUI");
+        });
     }
 </script>
 </body>
