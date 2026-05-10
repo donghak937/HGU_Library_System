@@ -1,16 +1,30 @@
-// jwt 생성 유틸리티 클래스
 package com.back.library.global.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-@Component
 public class JwtUtil {
+
+    // Singleton 인스턴스
+    private static JwtUtil instance;
+
+    // 외부 생성 방지
+    private JwtUtil() {
+    }
+
+    // Singleton 객체 반환
+    public static JwtUtil getInstance() {
+
+        if (instance == null) {
+            instance = new JwtUtil();
+        }
+
+        return instance;
+    }
 
     private final SecretKey secretKey = Keys.hmacShaKeyFor(
             "hgu-library-system-jwt-secret-key-1234567890".getBytes()

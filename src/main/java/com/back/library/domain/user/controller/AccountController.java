@@ -24,8 +24,9 @@ import jakarta.servlet.http.Cookie;
 public class AccountController {
 
     private final AccountRepository accountRepository;
-    private final JwtUtil jwtUtil;
 
+    // Singleton 객체 사용
+    private final JwtUtil jwtUtil = JwtUtil.getInstance();
     // 로그인 UI
     @GetMapping("/loginUI")
     public String showLoginUI() {
