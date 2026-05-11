@@ -12,6 +12,9 @@
     import com.back.library.domain.book.repository.LoanRepository;
     import com.back.library.domain.user.entity.Member;
     import com.back.library.domain.user.repository.MemberRepository;
+
+    import jakarta.validation.constraints.Null;
+
     import org.springframework.boot.CommandLineRunner;
     import org.springframework.context.annotation.Bean;
     import org.springframework.stereotype.Component;
@@ -109,11 +112,11 @@
 
                 // account 5개 (로그인 테스트용)
                 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"), true, "ACTIVE"));
-                accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), true, "ACTIVE"));
-                accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), true, "ACTIVE"));
-                accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), true, "ACTIVE"));
-                accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), true, "SUSPENDED"));
+                accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"),null, "ACTIVE"));
+                accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), null, "ACTIVE"));
+                accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), null, "ACTIVE"));
+                accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), null, "ACTIVE"));
+                accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), null, "SUSPENDED"));
 
 
                 // ════════════════════════════════════════════════

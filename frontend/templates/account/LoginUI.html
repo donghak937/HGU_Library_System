@@ -85,7 +85,6 @@
             padding: 40px 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
-
             display: none; /* 기본 숨김 */
         }
 
@@ -117,7 +116,6 @@
         .main-btn:hover {
             background: #3b6fdc;
         }
-
         /* 로그아웃 버튼 */
         .logout-btn {
             width: 100%;
@@ -133,7 +131,7 @@
 
         .logout-btn:hover {
             background: #ddd;
-}
+        }
     </style>
 </head>
 <body>
@@ -153,16 +151,47 @@
         Handong Global University Library System
     </div>
 </div>
-<div id="afterLogin" class="after-container" style="display:none">
+
+<div id="afterLogin" class="after-container">
     <h2 id="welcome"></h2>
 
     <div class="button-group">
-        <button class="main-btn" onclick="goToLibrary()">도서 시스템 이용</button>
-        <button class="logout-btn" onclick="logout()">로그아웃</button>
+        <button class="main-btn" onclick="goToLibrary()">
+            도서 시스템 이용
+        </button>
+
+        <button class="logout-btn" onclick="logout()">
+            로그아웃
+        </button>
     </div>
 </div>
+
 <script>
-   function submitLogin() {
+
+    // JWT 파싱
+    function parseJwt(token) {
+
+        const base64Url = token.split(".")[1];
+
+        const base64 = base64Url
+            .replace(/-/g, "+")
+            .replace(/_/g, "/");
+
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split("")
+                .map(c =>
+                    "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                )
+                .join("")
+        );
+
+        return JSON.parse(jsonPayload);
+    }
+
+    // 로그인
+    function submitLogin() {
+
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
@@ -178,57 +207,90 @@
         })
         .then(res => res.json())
         .then(data => {
+
             if (data.success) {
-                showLoginSuccess(data);
+
+                localStorage.setItem("accessToken", data.accessToken);
+
+                const payload = parseJwt(data.accessToken);
+
+                document.querySelector(".container").style.display = "none";
+
+                document.getElementById("afterLogin").style.display = "block";
+
+                document.getElementById("welcome").innerText =
+                    payload.username + "님 환영합니다!";
+
             } else {
-                showLoginFailure(data);
+
+                document.getElementById("message").style.color = "red";
+
+                document.getElementById("message").innerText =
+                    data.message || "로그인 실패";
             }
         })
-        .catch(() => {
-            showLoginFailure({ message: "서버 오류 발생" });
+        .catch(error => {
+
+            console.error(error);
+
+            document.getElementById("message").style.color = "red";
+
+            document.getElementById("message").innerText =
+                "로그인 처리 중 오류가 발생했습니다.";
         });
     }
-    function showLoginSuccess(data) {
-        localStorage.setItem("jwtToken", data.token);
 
-        // JWT 파싱해서 username 가져오기
-        const payload = JSON.parse(atob(data.token.split(".")[1]));
-        const username = payload.username;
-
-        // 로그인 폼 숨기기
-        document.querySelector(".container").style.display = "none";
-
-        // 로그인 후 영역 표시
-        const afterLogin = document.getElementById("afterLogin");
-        afterLogin.style.display = "block";
-
-        // 닉네임 표시
-        document.getElementById("welcome").innerText = username + "님 환영합니다!";
-    }
-
-    function showLoginFailure(data) {
-        const message = document.getElementById("message");
-
-        message.style.color = "red";
-        message.innerText = data.message || "로그인 실패";
-    }
-
+    // 로그아웃
     function logout() {
-        fetch("/account/logout", {
-            method: "POST"
-        })
-        .then(() => {
-            localStorage.removeItem("jwtToken");
-            alert("로그아웃 되었습니다.");
+
+        localStorage.removeItem("accessToken");
+
+        alert("로그아웃 되었습니다.");
+
+        window.location.href = "/account/loginUI";
+    }
+
+    // 도서 시스템 이동
+    function goToLibrary() {
+
+        const token = localStorage.getItem("accessToken");
+
+        if (!token) {
+
+            alert("로그인이 필요합니다.");
+
             window.location.href = "/account/loginUI";
+
+            return;
+        }
+
+        fetch("/book/SearchBookUI", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        })
+        .then(res => {
+
+            if (res.status === 401) {
+
+                alert("세션이 만료되었습니다.");
+
+                localStorage.clear();
+
+                window.location.href = "/account/loginUI";
+
+                return;
+            }
+
+            window.location.href = "/book/SearchBookUI";
         })
         .catch(() => {
-            alert("로그아웃 중 오류가 발생했습니다.");
+
+            alert("페이지 이동 중 오류가 발생했습니다.");
         });
     }
-    function goToLibrary() {
-        window.location.href = "/book/SearchBookUI";
-    }
+
 </script>
 
 </body>

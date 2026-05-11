@@ -111,22 +111,44 @@
     <div id="results"></div>
 </div>
 
+<script src="/static/js/auth.js"></script>
 <script>
-    // 토큰 파싱
-    const token = localStorage.getItem("jwtToken");
-    if (!token) {
-        alert("로그인이 필요합니다.");
-        window.location.href = "/account/loginUI";
-    }
-
+    // 토큰 파싱하여 사용자 정보 추출
     function parseJwt(token) {
         const base64Payload = token.split(".")[1];
         return JSON.parse(atob(base64Payload));
     }
 
-    const payload = parseJwt(token);
-    const CURRENT_MEMBER_ID = payload.username;
-    document.getElementById("user-name").textContent = "👤 " + CURRENT_MEMBER_ID;
+    function authHeader() {
+
+        const token =
+            localStorage.getItem("accessToken");
+
+        if (!token) return {};
+
+        return {
+            "Authorization": "Bearer " + token
+        };
+    }
+
+    const token = localStorage.getItem("accessToken");
+
+    let CURRENT_MEMBER_ID = null;
+
+    if (token) {
+        const payload = parseJwt(token);
+        CURRENT_MEMBER_ID = payload.username;
+
+        document.getElementById("user-name").textContent =
+            "👤 " + CURRENT_MEMBER_ID;
+    } else {
+        document.getElementById("user-badge").innerHTML = `
+            <button id="logout-btn"
+                    onclick="window.location.href='/account/loginUI'">
+                로그인
+            </button>
+        `;
+    }
 
     // ── 검색 결과 표시 ──────────────────────────────────────
 
@@ -240,13 +262,29 @@
                 let rows = copies.map(c => {
                     const badgeClass = c.status === "대출가능" ? "badge-available" : "badge-loaned";
 
-                    // 대출가능 → 대출하기 버튼 / 대출중 → 예약하기 버튼
-                    let actionBtn = "";
+                // 대출가능 → 대출하기 버튼 / 대출중 → 예약하기 버튼
+                let actionBtn = "";
+
+                // 로그인한 사용자만 버튼 표시
+                if (CURRENT_MEMBER_ID) {
+
                     if (c.status === "대출가능") {
-                        actionBtn = `<button class="btn-borrow-copy" onclick="requestBorrowCopy('${c.bookId}', '${bookId}')">대출하기</button>`;
+                        actionBtn = `
+                            <button class="btn-borrow-copy"
+                                onclick="requestBorrowCopy('${c.bookId}', '${bookId}')">
+                                대출하기
+                            </button>
+                        `;
                     } else {
-                        actionBtn = `<button class="btn-reserve-copy" onclick="requestReserve('${c.bookId}', '${bookId}')">예약하기</button>`;
+                        actionBtn = `
+                            <button class="btn-reserve-copy"
+                                onclick="requestReserve('${c.bookId}', '${bookId}')">
+                                예약하기
+                            </button>
+                        `;
                     }
+
+                }
 
                     return `<tr>
                         <td>${c.copyId}</td>
@@ -276,7 +314,10 @@
     function requestBorrowCopy(bookId, panelBookId) {
         fetch("/loan/borrowBook", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeader()
+            },
             body: JSON.stringify({ memberId: CURRENT_MEMBER_ID, bookId: bookId })
         })
         .then(res => res.json())
@@ -295,7 +336,8 @@
 
     function requestReserve(bookId, panelBookId) {
         fetch(`/book/reserveBook?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}&bookId=${encodeURIComponent(bookId)}`, {
-            method: "POST"
+            method: "POST",
+            headers: authHeader()
         })
         .then(res => res.json())
         .then(data => {
@@ -347,11 +389,19 @@
     }
 
     function logout() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        alert("로그아웃 되었습니다.");
-        window.location.href = "/account/loginUI";
+        fetch("/account/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+        .then(() => {
+
+            localStorage.removeItem("jwtToken");
+            localStorage.removeItem("accessToken");
+
+            alert("로그아웃 되었습니다.");
+
+            window.location.replace("/account/loginUI");
+        });
     }
 </script>
 </body>
