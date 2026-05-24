@@ -141,7 +141,7 @@
             .then(loans => {
                 resultsDiv.innerHTML = "";
                 if (loans.length === 0) {
-                    resultsDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>대출 중인 도서가 없습니다.</p>";
+                    resultsDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>대출 중인 대여 항목이 없습니다.</p>";
                     return;
                 }
 
@@ -188,7 +188,7 @@
     }
 
     function extendLoan(loanId) {
-        if (!confirm("이 도서를 7일 연장하시겠습니까?")) return;
+        if (!confirm("이 대여 항목을 7일 연장하시겠습니까?")) return;
 
        fetch(`/loan/extendLoan?loanId=${encodeURIComponent(loanId)}`, {
             method: "POST",
@@ -207,7 +207,7 @@
     }
 
     function returnBook(loanId) {
-        if (!confirm("이 도서를 반납하시겠습니까?")) return;
+        if (!confirm("이 대여 항목을 반납하시겠습니까?")) return;
 
         fetch(`/loan/returnBook?loanId=${encodeURIComponent(loanId)}`, {
             method: "POST",
@@ -237,7 +237,7 @@
             .then(res => res.json())
             .then(reservations => {
                 if (reservations.length === 0) {
-                    div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 도서가 없습니다.</p>";
+                    div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 대여 항목이 없습니다.</p>";
                     return;
                 }
                 div.innerHTML = reservations.map(r => {

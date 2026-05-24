@@ -227,11 +227,11 @@
             </div>
             <div id="availability-${book.bookId}" class="availability-summary">대출 가능 상태를 불러오는 중...</div>
         `;
-        showAvailabilityStatus(book.bookId);
+        showAvailabilityStatus(book.bookId, isGown);
         detailDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
-    function showAvailabilityStatus(bookId) {
+    function showAvailabilityStatus(bookId, isGown) {
         const availabilityDiv = document.getElementById("availability-" + bookId);
         fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
             .then(res => res.json())
@@ -242,9 +242,10 @@
                     return;
                 }
                 const availableCount = activeCopies.filter(c => c.status === "대출가능").length;
+                const unit = isGown ? "벌" : "권";
                 availabilityDiv.innerHTML = `
                     <span class="detail-label">Availability</span>
-                    <span>대출 가능 ${availableCount}권 / 전체 ${activeCopies.length}권</span>
+                    <span>대출 가능 ${availableCount}${unit} / 전체 ${activeCopies.length}${unit}</span>
                 `;
             })
             .catch(() => { availabilityDiv.textContent = "상태를 불러오지 못했습니다."; });
