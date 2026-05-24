@@ -206,11 +206,11 @@
                 if (!res.ok) throw new Error("Not found");
                 return res.json();
             })
-            .then(book => displayBookDetail(book))
+            .then(book => displayItemDetail(book))
             .catch(() => alert("도서 상세 정보를 불러오지 못했습니다."));
     }
 
-    function displayBookDetail(book) {
+    function displayItemDetail(book) {
         const detailDiv = document.getElementById("book-detail");
         detailDiv.classList.add("open");
         const isGown = book.category === "학위복";
