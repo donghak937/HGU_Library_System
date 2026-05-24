@@ -47,7 +47,7 @@ public class BookController {
 
     @GetMapping("/details")
     @ResponseBody
-    public ResponseEntity<Book> viewBookDetails(@RequestParam String bookId) {
+    public ResponseEntity<Book> viewItemDetail(@RequestParam String bookId) {
         return bookRepository.findById(bookId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

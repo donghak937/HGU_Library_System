@@ -184,7 +184,7 @@
                    <p class="book-info">분류: ${book.category} | ISBN: ${book.isbn}</p>`;
             bookDiv.innerHTML = `
                 <div class="book-header">
-                    <div class="book-info-wrap" onclick="viewBookDetails('${book.bookId}')">
+                    <div class="book-info-wrap" onclick="viewItemDetail('${book.bookId}')">
                         <p class="book-title">${titleIcon} ${book.title} ${gownBadge}</p>
                         ${infoHtml}
                     </div>
@@ -200,7 +200,7 @@
 
     // ── 도서 상세 ───────────────────────────────────────────
 
-    function viewBookDetails(bookId) {
+    function viewItemDetail(bookId) {
         fetch(`/book/details?bookId=${encodeURIComponent(bookId)}`)
             .then(res => {
                 if (!res.ok) throw new Error("Not found");
