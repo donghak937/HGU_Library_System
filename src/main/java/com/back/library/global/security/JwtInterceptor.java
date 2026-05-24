@@ -35,6 +35,20 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // 도서 관리자 기능 권한 검증 (사서 또는 어드민)
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/book/admin") && !requestURI.equals("/book/admin/BookManagementUI")) {
+            String role = jwtUtil.getRole(token);
+            if (!"LIBRARIAN".equals(role) && !"ADMIN".equals(role)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json; charset=UTF-8");
+                response.getWriter().write(
+                        "{\"success\": false, \"message\": \"권한이 없습니다. 사서만 접근 가능합니다.\"}"
+                );
+                return false;
+            }
+        }
+
         return true;
     }
 }

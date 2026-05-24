@@ -34,7 +34,7 @@ public class JwtUtil {
     private final long refreshExpirationTime = 1000L * 60 * 60 * 24 * 7; // 7일
 
     // Access Token 생성
-    public String createAccessToken(String accountId, String username, String status) {
+    public String createAccessToken(String accountId, String username, String status, String role) {
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessExpirationTime);
@@ -43,6 +43,7 @@ public class JwtUtil {
                 .subject(accountId)
                 .claim("username", username)
                 .claim("status", status)
+                .claim("role", role)
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -117,6 +118,18 @@ public class JwtUtil {
                 .getPayload();
 
         return claims.get("status", String.class);
+    }
+
+    // role 추출
+    public String getRole(String token) {
+
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("role", String.class);
     }
 
     // Authorization 헤더에서 Bearer 제거

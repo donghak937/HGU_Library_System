@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Book {
+public class Book implements Lendable {
     
     @Id
     private String bookId; // 도서 고유 번호
@@ -23,4 +23,9 @@ public class Book {
     private String publisher; // 출판사
     private String isbn; // 국제표준도서번호
     private String category; // 카테고리 (예: "소설", "IT")
+
+    @Override
+    public String getItemId() {
+        return this.bookId;
+    }
 }

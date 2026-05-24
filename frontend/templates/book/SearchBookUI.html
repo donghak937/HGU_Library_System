@@ -52,6 +52,7 @@
         .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.82em; font-weight: bold; }
         .badge-available { background: #d5f5e3; color: #1e8449; }
         .badge-loaned    { background: #fadbd8; color: #c0392b; }
+        .badge-other     { background: #dfe6e9; color: #636e72; }
 
         /* 대출하기 버튼 */
         .btn-borrow-copy { padding: 4px 12px; background-color: #27ae60; color: white; border: none; border-radius: 5px; font-size: 0.82em; font-weight: bold; cursor: pointer; white-space: nowrap; }
@@ -69,6 +70,7 @@
         #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; }
         #logout-btn { width: auto; padding: 6px 10px; margin: 0; background-color: #e74c3c; font-size: 0.8em; }
         #logout-btn:hover { background-color: #c0392b; }
+        .gown-item { border-left-color: #9b59b6 !important; }
     </style>
 </head>
 <body>
@@ -98,6 +100,7 @@
             <option value="철학">철학</option>
             <option value="자기계발">자기계발</option>
             <option value="수학">수학</option>
+            <option value="학위복">학위복</option>
         </select>
     </div>
 
@@ -105,6 +108,7 @@
         <button class="btn-search" onclick="searchByKeyword()">키워드 검색</button>
         <button class="btn-category" onclick="searchByCategory()">카테고리 검색</button>
         <button class="btn-mypage" onclick="window.location.href='/loan/ReturnBookUI'">내 대출/반납 페이지로 이동</button>
+        <button id="btn-admin-dashboard" class="btn-mypage" style="display: none; background-color: #8e44ad; width: 100%; margin-top: 10px;" onclick="window.location.href='/book/admin/BookManagementUI'">도서 관리 페이지로 이동 (사서/관리자 전용)</button>
     </div>
 
     <div id="book-detail" class="detail-panel"></div>
@@ -141,6 +145,10 @@
 
         document.getElementById("user-name").textContent =
             "👤 " + CURRENT_MEMBER_ID;
+
+        if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+            document.getElementById("btn-admin-dashboard").style.display = "block";
+        }
     } else {
         document.getElementById("user-badge").innerHTML = `
             <button id="logout-btn"
@@ -166,13 +174,19 @@
 
         books.forEach(book => {
             const bookDiv = document.createElement("div");
-            bookDiv.className = "book-item";
+            const isGown = book.category === "학위복";
+            bookDiv.className = "book-item" + (isGown ? " gown-item" : "");
+            const titleIcon = isGown ? "🎓" : "📘";
+            const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+            const infoHtml = isGown
+                ? `<p class="book-info">제공처: ${book.publisher} | 분류: ${book.category}</p>`
+                : `<p class="book-info">저자: ${book.author} | 출판사: ${book.publisher}</p>
+                   <p class="book-info">분류: ${book.category} | ISBN: ${book.isbn}</p>`;
             bookDiv.innerHTML = `
                 <div class="book-header">
                     <div class="book-info-wrap" onclick="viewBookDetails('${book.bookId}')">
-                        <p class="book-title">📘 ${book.title}</p>
-                        <p class="book-info">저자: ${book.author} | 출판사: ${book.publisher}</p>
-                        <p class="book-info">분류: ${book.category} | ISBN: ${book.isbn}</p>
+                        <p class="book-title">${titleIcon} ${book.title} ${gownBadge}</p>
+                        ${infoHtml}
                     </div>
                     <button class="btn-toggle" onclick="toggleCopies('${book.bookId}', this)">▼ 사본 보기</button>
                 </div>
@@ -199,13 +213,16 @@
     function displayBookDetail(book) {
         const detailDiv = document.getElementById("book-detail");
         detailDiv.classList.add("open");
+        const isGown = book.category === "학위복";
+        const titleIcon = isGown ? "🎓" : "📘";
+        const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
         detailDiv.innerHTML = `
-            <h2>${book.title}</h2>
+            <h2>${titleIcon} ${book.title} ${gownBadge}</h2>
             <div class="detail-grid">
-                <span class="detail-label">Book ID</span><span>${book.bookId}</span>
-                <span class="detail-label">Author</span><span>${book.author}</span>
-                <span class="detail-label">Publisher</span><span>${book.publisher}</span>
-                <span class="detail-label">ISBN</span><span>${book.isbn}</span>
+                <span class="detail-label">${isGown ? 'ID' : 'Book ID'}</span><span>${book.bookId}</span>
+                ${isGown ? '' : `<span class="detail-label">Author</span><span>${book.author}</span>`}
+                <span class="detail-label">${isGown ? 'Provider' : 'Publisher'}</span><span>${book.publisher}</span>
+                ${isGown ? '' : `<span class="detail-label">ISBN</span><span>${book.isbn}</span>`}
                 <span class="detail-label">Category</span><span>${book.category}</span>
             </div>
             <div id="availability-${book.bookId}" class="availability-summary">대출 가능 상태를 불러오는 중...</div>
@@ -219,14 +236,15 @@
         fetch(`/book/copies?bookId=${encodeURIComponent(bookId)}`)
             .then(res => res.json())
             .then(copies => {
-                if (copies.length === 0) {
+                const activeCopies = copies.filter(c => c.status !== "폐기됨");
+                if (activeCopies.length === 0) {
                     availabilityDiv.textContent = "등록된 사본이 없습니다.";
                     return;
                 }
-                const availableCount = copies.filter(c => c.status === "대출가능").length;
+                const availableCount = activeCopies.filter(c => c.status === "대출가능").length;
                 availabilityDiv.innerHTML = `
                     <span class="detail-label">Availability</span>
-                    <span>대출 가능 ${availableCount}권 / 전체 ${copies.length}권</span>
+                    <span>대출 가능 ${availableCount}권 / 전체 ${activeCopies.length}권</span>
                 `;
             })
             .catch(() => { availabilityDiv.textContent = "상태를 불러오지 못했습니다."; });
@@ -254,20 +272,21 @@
             .then(res => res.json())
             .then(copies => {
                 panel.dataset.loaded = "true";
-                if (copies.length === 0) {
+                const activeCopies = copies.filter(c => c.status !== "폐기됨");
+                if (activeCopies.length === 0) {
                     panel.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>등록된 사본이 없습니다.</p>";
                     return;
                 }
 
-                let rows = copies.map(c => {
-                    const badgeClass = c.status === "대출가능" ? "badge-available" : "badge-loaned";
+                let rows = activeCopies.map(c => {
+                    let badgeClass = "badge-other";
+                    if (c.status === "대출가능") badgeClass = "badge-available";
+                    else if (c.status === "대출중") badgeClass = "badge-loaned";
 
-                // 대출가능 → 대출하기 버튼 / 대출중 → 예약하기 버튼
                 let actionBtn = "";
 
                 // 로그인한 사용자만 버튼 표시
                 if (CURRENT_MEMBER_ID) {
-
                     if (c.status === "대출가능") {
                         actionBtn = `
                             <button class="btn-borrow-copy"
@@ -275,15 +294,16 @@
                                 대출하기
                             </button>
                         `;
-                    } else {
+                    } else if (c.status === "대출중") {
                         actionBtn = `
                             <button class="btn-reserve-copy"
                                 onclick="requestReserve('${c.bookId}', '${bookId}')">
                                 예약하기
                             </button>
                         `;
+                    } else {
+                        actionBtn = `<span style="color:#7f8c8d; font-size:0.85em; font-weight:bold;">대출/예약 불가</span>`;
                     }
-
                 }
 
                     return `<tr>

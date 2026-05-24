@@ -55,6 +55,8 @@
         #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; }
         #logout-btn { width: auto; padding: 6px 10px; margin: 0; background-color: #e74c3c; font-size: 0.8em; }
         #logout-btn:hover { background-color: #c0392b; }
+        .gown-item { border-left-color: #9b59b6 !important; }
+        .gown-reservation { border-left-color: #9b59b6 !important; }
 
         .nav-links { text-align: center; margin-top: 20px; }
         .nav-links a { color: #3498db; text-decoration: none; font-weight: bold; }
@@ -145,7 +147,10 @@
 
                 loans.forEach(loan => {
                     const loanDiv = document.createElement("div");
-                    loanDiv.className = "book-item";
+                    const isGown = loan.bookTitle.includes("학위복");
+                    loanDiv.className = "book-item" + (isGown ? " gown-item" : "");
+                    const titleIcon = isGown ? "🎓" : "📖";
+                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
 
                     const isOverdue = new Date() > new Date(loan.dueDate);
                     const overdueDays = calculateOverdueDays(loan.dueDate);
@@ -160,11 +165,12 @@
                     const extendDisabled = (isOverdue || loan.extensionCount >= 1 || loan.hasReservation)
                         ? "disabled" : "";
 
+                    const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
                     loanDiv.innerHTML = `
                         <div class="book-header">
                             <div class="book-info-wrap">
-                                <p class="book-title">📖 ${loan.bookTitle} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
-                                <p class="book-info">저자: ${loan.author} | 바코드: ${loan.barcode}</p>
+                                <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
+                                <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
                                 <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
                             </div>
                             <div class="btn-group">
@@ -234,16 +240,21 @@
                     div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 도서가 없습니다.</p>";
                     return;
                 }
-                div.innerHTML = reservations.map(r => `
-                    <div class="reservation-item">
+                div.innerHTML = reservations.map(r => {
+                    const isGown = r.bookTitle.includes("학위복");
+                    const titleIcon = isGown ? "🎓" : "📚";
+                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+                    const itemClass = "reservation-item" + (isGown ? " gown-reservation" : "");
+                    return `
+                    <div class="${itemClass}">
                         <div class="reservation-info">
-                            <p><strong>📚 ${r.bookTitle}</strong> &nbsp;
+                            <p><strong>${titleIcon} ${r.bookTitle} ${gownBadge}</strong> &nbsp;
                                <span class="badge badge-reservation">${r.queueNumber}번 대기</span></p>
                             <p>예약일: ${formatDate(r.requestDate)}</p>
                         </div>
                         <button class="btn-cancel-res" onclick="cancelReservation('${r.reservationId}')">예약 취소</button>
-                    </div>
-                `).join("");
+                    </div>`;
+                }).join("");
             })
             .catch(() => {
                 div.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>예약 목록을 불러오지 못했습니다.</p>";

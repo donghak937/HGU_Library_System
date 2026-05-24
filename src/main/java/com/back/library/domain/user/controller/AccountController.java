@@ -79,7 +79,8 @@ public class AccountController {
                 jwtUtil.createAccessToken(
                         account.getAccountId(),
                         account.getUsername(),
-                        account.getStatus()
+                        account.getStatus(),
+                        account.getRole()
                 );
 
         // Refresh Token
@@ -108,7 +109,7 @@ public class AccountController {
         response.addHeader(
                 "Set-Cookie",
                 cookie.toString()
-        );
+            );
 
         return Map.of(
                 "success", true,
@@ -116,7 +117,8 @@ public class AccountController {
                 "accessToken", accessToken,
                 "accountId", account.getAccountId(),
                 "username", account.getUsername(),
-                "status", account.getStatus()
+                "status", account.getStatus(),
+                "role", account.getRole()
         );
     }
 
@@ -209,7 +211,8 @@ public class AccountController {
                 jwtUtil.createAccessToken(
                         account.getAccountId(),
                         account.getUsername(),
-                        account.getStatus()
+                        account.getStatus(),
+                        account.getRole()
                 );
 
         return Map.of(
