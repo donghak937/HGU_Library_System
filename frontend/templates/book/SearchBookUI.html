@@ -17,6 +17,9 @@
         .btn-category:hover { background-color: #8e44ad; }
         .btn-mypage { background-color: #e67e22; width: 100%; margin-top: 10px; }
         .btn-mypage:hover { background-color: #d35400; }
+        .btn-gown { background: linear-gradient(135deg, #9b59b6, #8e44ad); width: 100%; margin-top: 10px; font-size: 1.05em; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(155, 89, 182, 0.25); clear: both; transition: all 0.2s ease; }
+        .btn-gown:hover { background: linear-gradient(135deg, #a569bd, #9b59b6); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(155, 89, 182, 0.35); }
+        .btn-gown:active { transform: translateY(0); }
 
         #results { margin-top: 30px; }
 
@@ -100,13 +103,13 @@
             <option value="철학">철학</option>
             <option value="자기계발">자기계발</option>
             <option value="수학">수학</option>
-            <option value="학위복">학위복</option>
         </select>
     </div>
 
     <div>
         <button class="btn-search" onclick="searchByKeyword()">키워드 검색</button>
         <button class="btn-category" onclick="searchByCategory()">카테고리 검색</button>
+        <button class="btn-gown" onclick="searchGowns()">🎓 학위복 대여/조회</button>
         <button class="btn-mypage" onclick="window.location.href='/loan/ReturnBookUI'">내 대출/반납 페이지로 이동</button>
         <button id="btn-admin-dashboard" class="btn-mypage" style="display: none; background-color: #8e44ad; width: 100%; margin-top: 10px;" onclick="window.location.href='/book/admin/BookManagementUI'">도서 관리 페이지로 이동 (사서/관리자 전용)</button>
     </div>
@@ -398,6 +401,13 @@
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("검색 중 오류가 발생했습니다."));
+    }
+
+    function searchGowns() {
+        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent("학위복")}`)
+            .then(res => res.json())
+            .then(data => displayResults(data))
+            .catch(() => alert("학위복 정보를 불러오는데 실패했습니다."));
     }
 
     // ── 공통 ────────────────────────────────────────────────
