@@ -309,13 +309,36 @@
                 saveCopy(bookCopyRepository, "C-053", "B-030", "BC-053", "대출가능", "2F-H03");
                 saveCopy(bookCopyRepository, "C-054", "B-030", "BC-054", "대출가능", "2F-H03");
 
-                // ── 학위복 ────────────────────────────────────────
-                saveBook(bookRepository, "B-031", "학사 학위복", "N/A", "HGU", "N/A", "학위복");
-                saveCopy(bookCopyRepository, "C-055", "B-031", "BC-055", "대출가능", "학위복 보관실");
-                saveCopy(bookCopyRepository, "C-056", "B-031", "BC-056", "대출가능", "학위복 보관실");
+                 // ── 학위복 ────────────────────────────────────────
+                 saveBook(bookRepository, "B-031", "학사 학위복 (남성용 M)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-055", "B-031", "BC-055", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-056", "B-031", "BC-056", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-062", "B-031", "BC-062", "대출가능", "학위복 보관실");
+ 
+                 saveBook(bookRepository, "B-032", "학사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-057", "B-032", "BC-057", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-063", "B-032", "BC-063", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-064", "B-032", "BC-064", "대출가능", "학위복 보관실");
 
-                saveBook(bookRepository, "B-032", "석사 학위복", "N/A", "HGU", "N/A", "학위복");
-                saveCopy(bookCopyRepository, "C-057", "B-032", "BC-057", "대출가능", "학위복 보관실");
+                 saveBook(bookRepository, "B-033", "학사 학위복 (여성용 S)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-058", "B-033", "BC-058", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-065", "B-033", "BC-065", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-066", "B-033", "BC-066", "대출가능", "학위복 보관실");
+
+                 saveBook(bookRepository, "B-034", "학사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-059", "B-034", "BC-059", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-067", "B-034", "BC-067", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-068", "B-034", "BC-068", "대출가능", "학위복 보관실");
+
+                 saveBook(bookRepository, "B-035", "석사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-060", "B-035", "BC-060", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-069", "B-035", "BC-069", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-070", "B-035", "BC-070", "대출가능", "학위복 보관실");
+
+                 saveBook(bookRepository, "B-036", "석사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
+                 saveCopy(bookCopyRepository, "C-061", "B-036", "BC-061", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-071", "B-036", "BC-071", "대출가능", "학위복 보관실");
+                 saveCopy(bookCopyRepository, "C-072", "B-036", "BC-072", "대출가능", "학위복 보관실");
 
 
                 // ════════════════════════════════════════════════

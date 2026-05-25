@@ -4,21 +4,207 @@
     <meta charset="UTF-8">
     <title>HGU 도서 검색</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 40px 0; box-sizing: border-box; }
-        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 640px; }
-        h1 { color: #2c3e50; text-align: center; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
-        input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; }
-        button { width: 48%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-search   { background-color: #3498db; }
-        .btn-search:hover { background-color: #2980b9; }
-        .btn-category { background-color: #9b59b6; float: right; }
-        .btn-category:hover { background-color: #8e44ad; }
-        .btn-mypage { background-color: #e67e22; width: 100%; margin-top: 10px; }
-        .btn-mypage:hover { background-color: #d35400; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+        }
+        .app-layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-menu {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            gap: 10px;
+        }
+        .menu-item:hover {
+            background-color: #334155;
+            color: #f8fafc;
+        }
+        .menu-item.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #334155;
+            background-color: #0f172a;
+        }
+        .user-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #user-display {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-logout {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease;
+        }
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
 
-        #results { margin-top: 30px; }
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            overflow-y: auto;
+            width: 100%;
+        }
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+        .content-card h2 {
+            margin: 0 0 8px 0;
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .content-desc {
+            margin: 0 0 24px 0;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        .search-box-row {
+            margin-bottom: 20px;
+        }
+        .search-box-row:last-child {
+            margin-bottom: 0;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+        .input-with-btn {
+            display: flex;
+            gap: 12px;
+        }
+        .input-with-btn input[type="text"], .input-with-btn select {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .input-with-btn input[type="text"]:focus, .input-with-btn select:focus {
+            border-color: #3b82f6;
+        }
+        .btn-action {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        .btn-search-primary {
+            background-color: #3b82f6;
+        }
+        .btn-search-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-search-secondary {
+            background-color: #8b5cf6;
+        }
+        .btn-search-secondary:hover {
+            background-color: #7c3aed;
+        }
+        .gown-info-banner {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 4px solid #a855f7;
+        }
+
+        /* Tab Visibility */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        #results { margin-top: 10px; }
 
         /* 책 카드 */
         .book-item { background: #ecf0f1; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #3498db; overflow: hidden; }
@@ -76,43 +262,102 @@
 <body>
 
 <div id="toast">✅ 대출 되었습니다</div>
-<div id="user-badge">
-    <span id="user-name"></span>
-    <button id="logout-btn" onclick="logout()">로그아웃</button>
-</div>
 
-<div class="search-container">
-    <h1>🔍 HGU 도서 검색</h1>
+<div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🎓 HGU Library</h2>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="#" class="menu-item active" onclick="switchMainTab('book')">📘 도서 검색</a>
+            <a href="#" class="menu-item" onclick="switchMainTab('gown')">🎓 학위복 대여</a>
+            <a href="/loan/ReturnBookUI" class="menu-item">👤 내 서재 (대출/반납)</a>
+            <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info-box">
+                <span id="user-display">👤 로딩중...</span>
+                <button class="btn-logout" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+    </aside>
 
-    <div class="form-group">
-        <label for="keyword">제목 또는 저자로 검색</label>
-        <input type="text" id="keyword" placeholder="검색어를 입력하세요 (예: 해리포터)">
-    </div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Book Search Tab -->
+        <div id="tab-book-content" class="tab-content active">
+            <div class="content-card">
+                <h2>🔍 도서 검색</h2>
+                <p class="content-desc">원하는 책의 제목, 저자 또는 카테고리를 활용하여 검색해 보세요.</p>
+                
+                <div class="search-box-row">
+                    <div class="form-group">
+                        <label for="keyword">키워드로 검색 (제목 또는 저자)</label>
+                        <div class="input-with-btn">
+                            <input type="text" id="keyword" placeholder="검색어를 입력하세요 (예: 해리포터)">
+                            <button class="btn-action btn-search-primary" onclick="searchByKeyword()">검색</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-box-row" style="margin-top: 24px;">
+                    <div class="form-group">
+                        <label for="category">카테고리로 검색</label>
+                        <div class="input-with-btn">
+                            <select id="category">
+                                <option value="소설">소설</option>
+                                <option value="컴퓨터공학">컴퓨터공학</option>
+                                <option value="역사">역사</option>
+                                <option value="과학">과학</option>
+                                <option value="경영">경영</option>
+                                <option value="철학">철학</option>
+                                <option value="자기계발">자기계발</option>
+                                <option value="수학">수학</option>
+                            </select>
+                            <button class="btn-action btn-search-secondary" onclick="searchByCategory()">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="form-group">
-        <label for="category">카테고리로 검색</label>
-        <select id="category">
-            <option value="소설">소설</option>
-            <option value="컴퓨터공학">컴퓨터공학</option>
-            <option value="역사">역사</option>
-            <option value="과학">과학</option>
-            <option value="경영">경영</option>
-            <option value="철학">철학</option>
-            <option value="자기계발">자기계발</option>
-            <option value="수학">수학</option>
-            <option value="학위복">학위복</option>
-        </select>
-    </div>
+        <!-- Graduation Gown Tab -->
+        <div id="tab-gown-content" class="tab-content">
+            <div class="content-card">
+                <h2>🎓 학위복 대여 및 조회</h2>
+                <p class="content-desc">대여 가능한 학사복, 석사복의 실물 수량 및 대출 가능 여부를 확인하세요.</p>
+                <div class="gown-info-banner" style="margin-bottom: 24px;">
+                    💡 <strong>대여 안내:</strong> 학위복은 졸업 시즌 대상 대여 품목으로, 일반 도서와는 별개의 대출 규칙이 적용될 수 있습니다.
+                </div>
 
-    <div>
-        <button class="btn-search" onclick="searchByKeyword()">키워드 검색</button>
-        <button class="btn-category" onclick="searchByCategory()">카테고리 검색</button>
-        <button class="btn-mypage" onclick="window.location.href='/loan/ReturnBookUI'">내 대출/반납 페이지로 이동</button>
-        <button id="btn-admin-dashboard" class="btn-mypage" style="display: none; background-color: #8e44ad; width: 100%; margin-top: 10px;" onclick="window.location.href='/book/admin/BookManagementUI'">도서 관리 페이지로 이동 (사서/관리자 전용)</button>
-    </div>
+                <div class="search-box-row">
+                    <div class="form-group">
+                        <label for="gown-category-select">학위복 카테고리 선택</label>
+                        <div class="input-with-btn">
+                            <select id="gown-category-select">
+                                <option value="전체">전체 학위복</option>
+                                <option value="학사">학사 학위복</option>
+                                <option value="석사">석사 학위복</option>
+                                <option value="남성용">남성용 학위복</option>
+                                <option value="여성용">여성용 학위복</option>
+                            </select>
+                            <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByCategory()">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div id="book-detail" class="detail-panel"></div>
-    <div id="results"></div>
+        <!-- Details Panel (Reused by both tabs) -->
+        <div id="book-detail" class="detail-panel"></div>
+
+        <!-- Results Card (Reused by both tabs) -->
+        <div class="content-card results-card" id="results-card" style="display: none;">
+            <h3 style="margin: 0 0 16px 0; color: #0f172a; font-size: 1.15rem; font-weight: 700;">📋 조회 결과</h3>
+            <div id="results"></div>
+        </div>
+    </main>
 </div>
 
 <script src="/static/js/auth.js"></script>
@@ -143,19 +388,32 @@
         const payload = parseJwt(token);
         CURRENT_MEMBER_ID = payload.username;
 
-        document.getElementById("user-name").textContent =
-            "👤 " + CURRENT_MEMBER_ID;
+        const userDisplay = document.getElementById("user-display");
+        if (userDisplay) {
+            userDisplay.textContent = "👤 " + CURRENT_MEMBER_ID + " (" + payload.role + ")";
+        }
 
         if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
-            document.getElementById("btn-admin-dashboard").style.display = "block";
+            const adminLink = document.getElementById("sidebar-admin-link");
+            if (adminLink) adminLink.style.display = "flex";
         }
     } else {
-        document.getElementById("user-badge").innerHTML = `
-            <button id="logout-btn"
-                    onclick="window.location.href='/account/loginUI'">
-                로그인
-            </button>
-        `;
+        const sidebarFooter = document.querySelector(".sidebar-footer");
+        if (sidebarFooter) {
+            sidebarFooter.innerHTML = `
+                <button class="btn-logout" style="background-color: #3b82f6;"
+                        onclick="window.location.href='/account/loginUI'">
+                    로그인
+                </button>
+            `;
+        }
+    }
+
+    // URL 파라미터 확인하여 탭 선택
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab');
+    if (initialTab === 'gown') {
+        switchMainTab('gown');
     }
 
     // ── 검색 결과 표시 ──────────────────────────────────────
@@ -169,6 +427,7 @@
 
         if (books.length === 0) {
             resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>검색 결과가 없습니다.</p>";
+            document.getElementById("results-card").style.display = "block";
             return;
         }
 
@@ -196,6 +455,7 @@
             `;
             resultsDiv.appendChild(bookDiv);
         });
+        document.getElementById("results-card").style.display = "block";
     }
 
     // ── 도서 상세 ───────────────────────────────────────────
@@ -400,6 +660,25 @@
             .catch(() => alert("검색 중 오류가 발생했습니다."));
     }
 
+    function searchGowns() {
+        fetch(`/book/searchBooksByCategory?category=${encodeURIComponent("학위복")}`)
+            .then(res => res.json())
+            .then(data => displayResults(data))
+            .catch(() => alert("학위복 정보를 불러오는데 실패했습니다."));
+    }
+
+    function searchGownsByCategory() {
+        const categoryVal = document.getElementById("gown-category-select").value;
+        if (categoryVal === "전체") {
+            searchGowns();
+        } else {
+            fetch(`/book/searchGowns?keyword=${encodeURIComponent(categoryVal)}`)
+                .then(res => res.json())
+                .then(data => displayResults(data))
+                .catch(() => alert("학위복 검색 중 오류가 발생했습니다."));
+        }
+    }
+
     // ── 공통 ────────────────────────────────────────────────
 
     function showToast(message) {
@@ -423,6 +702,34 @@
 
             window.location.replace("/account/loginUI");
         });
+    }
+
+    // ── 탭 전환 ─────────────────────────────────────────────
+
+    function switchMainTab(tabId) {
+        // Toggle menu class
+        document.querySelectorAll('.menu-item').forEach(el => {
+            el.classList.remove('active');
+        });
+        
+        // Clear results and detail panel
+        document.getElementById('results').innerHTML = "";
+        document.getElementById('results-card').style.display = "none";
+        const detailDiv = document.getElementById('book-detail');
+        detailDiv.innerHTML = "";
+        detailDiv.classList.remove("open");
+        
+        if (tabId === 'book') {
+            document.querySelector('.menu-item[onclick*="book"]').classList.add('active');
+            document.getElementById('tab-book-content').classList.add('active');
+            document.getElementById('tab-gown-content').classList.remove('active');
+        } else if (tabId === 'gown') {
+            document.querySelector('.menu-item[onclick*="gown"]').classList.add('active');
+            document.getElementById('tab-gown-content').classList.add('active');
+            document.getElementById('tab-book-content').classList.remove('active');
+            // Fetch gowns immediately!
+            searchGowns();
+        }
     }
 </script>
 </body>
