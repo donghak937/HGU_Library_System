@@ -15,8 +15,6 @@ public class KeywordSearchStrategy implements BookSearchStrategy {
 
     @Override
     public List<Book> search(String keyword) {
-        return bookRepository.findByTitleContainingOrAuthorContaining(keyword, keyword).stream()
-                .filter(book -> !"학위복".equals(book.getCategory()))
-                .toList();
+        return bookRepository.findByTitleContainingOrAuthorContaining(keyword, keyword);
     }
 }

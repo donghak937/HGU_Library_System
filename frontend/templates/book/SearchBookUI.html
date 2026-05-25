@@ -327,8 +327,18 @@
             <div class="content-card">
                 <h2>🎓 학위복 대여 및 조회</h2>
                 <p class="content-desc">대여 가능한 학사복, 석사복의 실물 수량 및 대출 가능 여부를 확인하세요.</p>
-                <div class="gown-info-banner">
+                <div class="gown-info-banner" style="margin-bottom: 24px;">
                     💡 <strong>대여 안내:</strong> 학위복은 졸업 시즌 대상 대여 품목으로, 일반 도서와는 별개의 대출 규칙이 적용될 수 있습니다.
+                </div>
+
+                <div class="search-box-row">
+                    <div class="form-group">
+                        <label for="gown-keyword">학위복 키워드 검색 (예: 남성용, 여성용, M, L, 석사)</label>
+                        <div class="input-with-btn">
+                            <input type="text" id="gown-keyword" placeholder="검색어를 입력하세요 (예: 남성용 M)">
+                            <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByKeyword()">검색</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -649,6 +659,14 @@
             .then(res => res.json())
             .then(data => displayResults(data))
             .catch(() => alert("학위복 정보를 불러오는데 실패했습니다."));
+    }
+
+    function searchGownsByKeyword() {
+        const keyword = document.getElementById("gown-keyword").value;
+        fetch(`/book/searchGowns?keyword=${encodeURIComponent(keyword)}`)
+            .then(res => res.json())
+            .then(data => displayResults(data))
+            .catch(() => alert("학위복 검색 중 오류가 발생했습니다."));
     }
 
     // ── 공통 ────────────────────────────────────────────────
