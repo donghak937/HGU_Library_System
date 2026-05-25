@@ -393,6 +393,13 @@
         }
     }
 
+    // URL 파라미터 확인하여 탭 선택
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab');
+    if (initialTab === 'gown') {
+        switchMainTab('gown');
+    }
+
     // ── 검색 결과 표시 ──────────────────────────────────────
 
     function displayResults(books) {
