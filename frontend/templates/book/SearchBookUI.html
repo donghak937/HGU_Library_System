@@ -485,7 +485,7 @@
                 ${isGown ? '' : `<span class="detail-label">ISBN</span><span>${book.isbn}</span>`}
                 <span class="detail-label">Category</span><span>${book.category}</span>
             </div>
-            <div id="availability-${book.bookId}" class="availability-summary">대출 가능 상태를 불러오는 중...</div>
+            <div id="availability-${book.bookId}" class="availability-summary">${isGown ? '대여 가능 상태를 불러오는 중...' : '대출 가능 상태를 불러오는 중...'}</div>
         `;
         showAvailabilityStatus(book.bookId, isGown);
         detailDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -503,9 +503,10 @@
                 }
                 const availableCount = activeCopies.filter(c => c.status === "대출가능").length;
                 const unit = isGown ? "벌" : "권";
+                const availabilityText = isGown ? "대여 가능" : "대출 가능";
                 availabilityDiv.innerHTML = `
                     <span class="detail-label">Availability</span>
-                    <span>대출 가능 ${availableCount}${unit} / 전체 ${activeCopies.length}${unit}</span>
+                    <span>${availabilityText} ${availableCount}${unit} / 전체 ${activeCopies.length}${unit}</span>
                 `;
             })
             .catch(() => { availabilityDiv.textContent = "상태를 불러오지 못했습니다."; });
@@ -539,20 +540,30 @@
                     return;
                 }
 
+                const isGown = panel.closest('.book-item').classList.contains('gown-item');
+
                 let rows = activeCopies.map(c => {
                     let badgeClass = "badge-other";
-                    if (c.status === "대출가능") badgeClass = "badge-available";
-                    else if (c.status === "대출중") badgeClass = "badge-loaned";
+                    let statusText = c.status;
+
+                    if (c.status === "대출가능") {
+                        badgeClass = "badge-available";
+                        if (isGown) statusText = "대여가능";
+                    } else if (c.status === "대출중") {
+                        badgeClass = "badge-loaned";
+                        if (isGown) statusText = "대여중";
+                    }
 
                 let actionBtn = "";
 
                 // 로그인한 사용자만 버튼 표시
                 if (CURRENT_MEMBER_ID) {
                     if (c.status === "대출가능") {
+                        const btnText = isGown ? "대여하기" : "대출하기";
                         actionBtn = `
                             <button class="btn-borrow-copy"
                                 onclick="requestBorrowCopy('${c.bookId}', '${bookId}')">
-                                대출하기
+                                ${btnText}
                             </button>
                         `;
                     } else if (c.status === "대출중") {
@@ -563,7 +574,8 @@
                             </button>
                         `;
                     } else {
-                        actionBtn = `<span style="color:#7f8c8d; font-size:0.85em; font-weight:bold;">대출/예약 불가</span>`;
+                        const denyText = isGown ? "대여/예약 불가" : "대출/예약 불가";
+                        actionBtn = `<span style="color:#7f8c8d; font-size:0.85em; font-weight:bold;">${denyText}</span>`;
                     }
                 }
 
@@ -571,7 +583,7 @@
                         <td>${c.copyId}</td>
                         <td>${c.barcode}</td>
                         <td>${c.location}</td>
-                        <td><span class="badge ${badgeClass}">${c.status}</span></td>
+                        <td><span class="badge ${badgeClass}">${statusText}</span></td>
                         <td>${actionBtn}</td>
                     </tr>`;
                 }).join("");
@@ -593,6 +605,9 @@
     // ── 대출 ────────────────────────────────────────────────
 
     function requestBorrowCopy(bookId, panelBookId) {
+        const panel = document.getElementById("copies-" + panelBookId);
+        const isGown = panel && panel.closest('.book-item').classList.contains('gown-item');
+
         fetch("/loan/borrowBook", {
             method: "POST",
             headers: {
@@ -604,10 +619,14 @@
         .then(res => res.json())
         .then(success => {
             if (success) {
-                showToast("✅ 대출 되었습니다");
+                const toastMsg = isGown ? "✅ 대여 되었습니다" : "✅ 대출 되었습니다";
+                showToast(toastMsg);
                 reloadCopyPanel(panelBookId);
             } else {
-                alert("대출에 실패했습니다. 정지 상태 또는 대출 한도를 확인해주세요.");
+                const failMsg = isGown
+                    ? "대여에 실패했습니다. 정지 상태 또는 대여 한도를 확인해주세요."
+                    : "대출에 실패했습니다. 정지 상태 또는 대출 한도를 확인해주세요.";
+                alert(failMsg);
             }
         })
         .catch(() => alert("서버와의 통신 중 오류가 발생했습니다."));

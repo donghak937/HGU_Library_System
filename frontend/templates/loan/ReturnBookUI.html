@@ -356,12 +356,13 @@
             ? "disabled" : "";
 
         const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
+        const dateLabel = isGown ? "대여일" : "대출일";
         loanDiv.innerHTML = `
             <div class="book-header">
                 <div class="book-info-wrap">
                     <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
                     <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
-                    <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
+                    <p class="book-info">${dateLabel}: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
                 </div>
                 <div class="btn-group">
                     <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
