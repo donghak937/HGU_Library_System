@@ -333,10 +333,16 @@
 
                 <div class="search-box-row">
                     <div class="form-group">
-                        <label for="gown-keyword">학위복 키워드 검색 (예: 남성용, 여성용, M, L, 석사)</label>
+                        <label for="gown-category-select">학위복 카테고리 선택</label>
                         <div class="input-with-btn">
-                            <input type="text" id="gown-keyword" placeholder="검색어를 입력하세요 (예: 남성용 M)">
-                            <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByKeyword()">검색</button>
+                            <select id="gown-category-select">
+                                <option value="전체">전체 학위복</option>
+                                <option value="학사">학사 학위복</option>
+                                <option value="석사">석사 학위복</option>
+                                <option value="남성용">남성용 학위복</option>
+                                <option value="여성용">여성용 학위복</option>
+                            </select>
+                            <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByCategory()">검색</button>
                         </div>
                     </div>
                 </div>
@@ -661,12 +667,16 @@
             .catch(() => alert("학위복 정보를 불러오는데 실패했습니다."));
     }
 
-    function searchGownsByKeyword() {
-        const keyword = document.getElementById("gown-keyword").value;
-        fetch(`/book/searchGowns?keyword=${encodeURIComponent(keyword)}`)
-            .then(res => res.json())
-            .then(data => displayResults(data))
-            .catch(() => alert("학위복 검색 중 오류가 발생했습니다."));
+    function searchGownsByCategory() {
+        const categoryVal = document.getElementById("gown-category-select").value;
+        if (categoryVal === "전체") {
+            searchGowns();
+        } else {
+            fetch(`/book/searchGowns?keyword=${encodeURIComponent(categoryVal)}`)
+                .then(res => res.json())
+                .then(data => displayResults(data))
+                .catch(() => alert("학위복 검색 중 오류가 발생했습니다."));
+        }
     }
 
     // ── 공통 ────────────────────────────────────────────────

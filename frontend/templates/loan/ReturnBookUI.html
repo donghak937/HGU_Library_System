@@ -208,20 +208,32 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-        <!-- My Library Section -->
-        <div class="content-card">
-            <h2>📚 내 서재 (대출/반납)</h2>
-            <p class="content-desc">현재 대출 중인 물품 연체 상태 확인, 대출 연장 및 반납을 처리할 수 있습니다.</p>
-            
-            <h3 style="margin: 24px 0 12px 0; color: #0f172a; font-size: 1.1rem; font-weight: 700;">📦 대출 중인 항목</h3>
-            <div id="results"></div>
+        <!-- Book Loans Card -->
+        <div class="content-card" id="book-loans-card">
+            <h2>📚 일반 도서 대출 내역</h2>
+            <p class="content-desc">현재 대출 중인 일반 도서의 연체 상태를 확인하고 연장 및 반납을 처리할 수 있습니다.</p>
+            <div id="book-loans-results"></div>
         </div>
 
-        <!-- Reservation List Section -->
-        <div class="content-card reservation-section" style="margin-top: 0;">
-            <h2>📋 내 예약 목록</h2>
-            <p class="content-desc">반납 대기 중인 예약 신청 내역 및 현재 대기 순번을 확인할 수 있습니다.</p>
-            <div id="reservation-results"></div>
+        <!-- Gown Loans Card -->
+        <div class="content-card" id="gown-loans-card" style="margin-top: 0;">
+            <h2>🎓 학위복 대여 내역</h2>
+            <p class="content-desc">현재 대여 중인 학위복의 실물 수량 상태를 확인하고 반납을 처리할 수 있습니다.</p>
+            <div id="gown-loans-results"></div>
+        </div>
+
+        <!-- Book Reservation Card -->
+        <div class="content-card reservation-section" id="book-reservations-card" style="margin-top: 0;">
+            <h2>📋 일반 도서 예약 목록</h2>
+            <p class="content-desc">반납 대기 중인 일반 도서의 예약 신청 내역 및 현재 대기 순번을 확인할 수 있습니다.</p>
+            <div id="book-reservations-results"></div>
+        </div>
+
+        <!-- Gown Reservation Card -->
+        <div class="content-card reservation-section" id="gown-reservations-card" style="margin-top: 0;">
+            <h2>🎓 학위복 예약 목록</h2>
+            <p class="content-desc">대여 대기 중인 학위복의 예약 신청 내역 및 현재 대기 순번을 확인할 수 있습니다.</p>
+            <div id="gown-reservations-results"></div>
         </div>
     </main>
 </div>
@@ -275,8 +287,10 @@
     // ── 대출 목록 ────────────────────────────────────────────
 
     function fetchMyLoans() {
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
+        const bookDiv = document.getElementById("book-loans-results");
+        const gownDiv = document.getElementById("gown-loans-results");
+        bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
+        gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
 
         fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
             headers: {
@@ -285,42 +299,40 @@
         })
             .then(res => res.json())
             .then(loans => {
-                resultsDiv.innerHTML = "";
-                if (loans.length === 0) {
-                    resultsDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>대출 중인 대여 항목이 없습니다.</p>";
-                    return;
-                }
+                bookDiv.innerHTML = "";
+                gownDiv.innerHTML = "";
 
                 const bookLoans = loans.filter(loan => !loan.bookTitle.includes("학위복"));
                 const gownLoans = loans.filter(loan => loan.bookTitle.includes("학위복"));
 
-                // 📘 일반 도서 섹션
-                const bookSection = document.createElement("div");
-                bookSection.innerHTML = `<h4 style="margin: 20px 0 10px 0; color: #2c3e50; font-size: 1rem; border-bottom: 2px solid #3498db; padding-bottom: 6px;">📘 일반 도서 대출 내역 (${bookLoans.length}건)</h4>`;
+                // Update counts in header
+                const bookTitle = document.querySelector("#book-loans-card h2");
+                bookTitle.innerHTML = `📚 일반 도서 대출 내역 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${bookLoans.length}권)</span>`;
+
+                const gownTitle = document.querySelector("#gown-loans-card h2");
+                gownTitle.innerHTML = `🎓 학위복 대여 내역 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${gownLoans.length}벌)</span>`;
+
+                // Render books
                 if (bookLoans.length === 0) {
-                    bookSection.innerHTML += `<p style="color:#7f8c8d; font-size:0.9em; padding: 10px 0;">대출 중인 도서가 없습니다.</p>`;
+                    bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>대출 중인 도서가 없습니다.</p>";
                 } else {
                     bookLoans.forEach(loan => {
-                        bookSection.appendChild(createLoanElement(loan, false));
+                        bookDiv.appendChild(createLoanElement(loan, false));
                     });
                 }
-                resultsDiv.appendChild(bookSection);
 
-                // 🎓 학위복 섹션
-                const gownSection = document.createElement("div");
-                gownSection.style.marginTop = "30px";
-                gownSection.innerHTML = `<h4 style="margin: 20px 0 10px 0; color: #8e44ad; font-size: 1rem; border-bottom: 2px solid #9b59b6; padding-bottom: 6px;">🎓 학위복 대여 내역 (${gownLoans.length}건)</h4>`;
+                // Render gowns
                 if (gownLoans.length === 0) {
-                    gownSection.innerHTML += `<p style="color:#7f8c8d; font-size:0.9em; padding: 10px 0;">대여 중인 학위복이 없습니다.</p>`;
+                    gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>대여 중인 학위복이 없습니다.</p>";
                 } else {
                     gownLoans.forEach(loan => {
-                        gownSection.appendChild(createLoanElement(loan, true));
+                        gownDiv.appendChild(createLoanElement(loan, true));
                     });
                 }
-                resultsDiv.appendChild(gownSection);
             })
             .catch(() => {
-                resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
+                bookDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
+                gownDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
             });
     }
 
@@ -402,44 +414,43 @@
     // ── 예약 ────
 
     function fetchMyReservations() {
-        const div = document.getElementById("reservation-results");
-        div.innerHTML = "";
+        const bookDiv = document.getElementById("book-reservations-results");
+        const gownDiv = document.getElementById("gown-reservations-results");
+        bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
+        gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
 
         fetch(`/book/myReservations?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
             headers: authHeader()
         })
             .then(res => res.json())
             .then(reservations => {
-                if (reservations.length === 0) {
-                    div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 대여 항목이 없습니다.</p>";
-                    return;
-                }
+                bookDiv.innerHTML = "";
+                gownDiv.innerHTML = "";
 
                 const bookRes = reservations.filter(r => !r.bookTitle.includes("학위복"));
                 const gownRes = reservations.filter(r => r.bookTitle.includes("학위복"));
 
-                let html = "";
-
-                // 📘 도서 예약 목록
-                html += `<h4 style="margin: 15px 0 10px 0; color: #2c3e50; font-size: 0.95rem; border-bottom: 1px solid #3498db; padding-bottom: 4px;">📘 일반 도서 예약 내역 (${bookRes.length}건)</h4>`;
+                // Update counts and render books
+                const bookTitle = document.querySelector("#book-reservations-card h2");
+                bookTitle.innerHTML = `📋 일반 도서 예약 목록 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${bookRes.length}권)</span>`;
                 if (bookRes.length === 0) {
-                    html += `<p style="color:#7f8c8d; font-size:0.85em; padding: 5px 0;">예약 중인 도서가 없습니다.</p>`;
+                    bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>예약 중인 도서가 없습니다.</p>";
                 } else {
-                    html += bookRes.map(r => renderReservationItem(r, false)).join("");
+                    bookDiv.innerHTML = bookRes.map(r => renderReservationItem(r, false)).join("");
                 }
 
-                // 🎓 학위복 예약 목록
-                html += `<h4 style="margin: 25px 0 10px 0; color: #8e44ad; font-size: 0.95rem; border-bottom: 1px solid #9b59b6; padding-bottom: 4px;">🎓 학위복 예약 내역 (${gownRes.length}건)</h4>`;
+                // Update counts and render gowns
+                const gownTitle = document.querySelector("#gown-reservations-card h2");
+                gownTitle.innerHTML = `🎓 학위복 예약 목록 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${gownRes.length}벌)</span>`;
                 if (gownRes.length === 0) {
-                    html += `<p style="color:#7f8c8d; font-size:0.85em; padding: 5px 0;">예약 중인 학위복이 없습니다.</p>`;
+                    gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>예약 중인 학위복이 없습니다.</p>";
                 } else {
-                    html += gownRes.map(r => renderReservationItem(r, true)).join("");
+                    gownDiv.innerHTML = gownRes.map(r => renderReservationItem(r, true)).join("");
                 }
-
-                div.innerHTML = html;
             })
             .catch(() => {
-                div.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>예약 목록을 불러오지 못했습니다.</p>";
+                bookDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>예약 목록을 불러오지 못했습니다.</p>";
+                gownDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>예약 목록을 불러오지 못했습니다.</p>";
             });
     }
 
