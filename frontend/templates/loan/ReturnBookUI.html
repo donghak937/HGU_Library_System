@@ -17,7 +17,7 @@
             width: 100%;
             min-height: 100vh;
         }
-        
+
         /* Sidebar Styles */
         .sidebar {
             width: 260px;
@@ -197,6 +197,7 @@
             <a href="/book/SearchBookUI?tab=gown" class="menu-item">🎓 학위복 대여</a>
             <a href="#" class="menu-item active">👤 내 서재 (대출/반납)</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
+            <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-info-box">
@@ -265,6 +266,8 @@
     if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
         const adminLink = document.getElementById("sidebar-admin-link");
         if (adminLink) adminLink.style.display = "flex";
+        const overdueLink = document.getElementById("sidebar-overdue-link");
+        if (overdueLink) overdueLink.style.display = "flex";
     }
 
     window.onload = function() {
@@ -356,13 +359,12 @@
             ? "disabled" : "";
 
         const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
-        const dateLabel = isGown ? "대여일" : "대출일";
         loanDiv.innerHTML = `
             <div class="book-header">
                 <div class="book-info-wrap">
                     <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
                     <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
-                    <p class="book-info">${dateLabel}: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
+                    <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
                 </div>
                 <div class="btn-group">
                     <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>

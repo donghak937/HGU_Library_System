@@ -20,7 +20,8 @@ public class WebConfig implements WebMvcConfigurer {
                 //경로에 적힌 주소들은 인터셉터에 잡혀 토큰 유효성 검사를 함
                 .addPathPatterns(
                         "/book/**",
-                        "/loan/**"
+                        "/loan/**",
+                        "/overdue/**"
                 )
                 //여기 경로에 적힌  주소들은 인터셉터에 잡히지 않음
                 .excludePathPatterns(
@@ -37,6 +38,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "/book/details",
                         "/book/copies",
                         "/loan/ReturnBookUI",
+
+                        "/overdue/OverdueManagementUI",
+
                         "/js/**",
                         "/css/**",
                         "/images/**",
