@@ -274,6 +274,7 @@
             <a href="#" class="menu-item" onclick="switchMainTab('gown')">🎓 학위복 대여</a>
             <a href="/loan/ReturnBookUI" class="menu-item">👤 내 서재 (대출/반납)</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
+            <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-info-box">
@@ -395,7 +396,14 @@
 
         if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
             const adminLink = document.getElementById("sidebar-admin-link");
-            if (adminLink) adminLink.style.display = "flex";
+            if (adminLink) {
+                adminLink.style.display = "flex";
+            }
+
+            const overdueLink = document.getElementById("sidebar-overdue-link");
+            if (overdueLink) {
+                overdueLink.style.display = "flex";
+            }
         }
     } else {
         const sidebarFooter = document.querySelector(".sidebar-footer");
