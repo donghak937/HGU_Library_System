@@ -291,46 +291,73 @@
                     return;
                 }
 
-                loans.forEach(loan => {
-                    const loanDiv = document.createElement("div");
-                    const isGown = loan.bookTitle.includes("학위복");
-                    loanDiv.className = "book-item" + (isGown ? " gown-item" : "");
-                    const titleIcon = isGown ? "🎓" : "📖";
-                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+                const bookLoans = loans.filter(loan => !loan.bookTitle.includes("학위복"));
+                const gownLoans = loans.filter(loan => loan.bookTitle.includes("학위복"));
 
-                    const isOverdue = new Date() > new Date(loan.dueDate);
-                    const overdueDays = calculateOverdueDays(loan.dueDate);
-                    const overdueBadge = isOverdue
-                        ? `<span class="badge badge-due">연체 ${overdueDays}일</span>` : "";
-                    const extendedBadge = loan.extensionCount > 0
-                        ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
-                    const reservationBadge = loan.hasReservation
-                        ? `<span class="badge badge-reservation">예약자 있음</span>` : "";
+                // 📘 일반 도서 섹션
+                const bookSection = document.createElement("div");
+                bookSection.innerHTML = `<h4 style="margin: 20px 0 10px 0; color: #2c3e50; font-size: 1rem; border-bottom: 2px solid #3498db; padding-bottom: 6px;">📘 일반 도서 대출 내역 (${bookLoans.length}건)</h4>`;
+                if (bookLoans.length === 0) {
+                    bookSection.innerHTML += `<p style="color:#7f8c8d; font-size:0.9em; padding: 10px 0;">대출 중인 도서가 없습니다.</p>`;
+                } else {
+                    bookLoans.forEach(loan => {
+                        bookSection.appendChild(createLoanElement(loan, false));
+                    });
+                }
+                resultsDiv.appendChild(bookSection);
 
-                    // 연장 불가: 연체 OR 1회 연장 완료 OR 예약자 있음
-                    const extendDisabled = (isOverdue || loan.extensionCount >= 1 || loan.hasReservation)
-                        ? "disabled" : "";
-
-                    const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
-                    loanDiv.innerHTML = `
-                        <div class="book-header">
-                            <div class="book-info-wrap">
-                                <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
-                                <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
-                                <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
-                                <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
-                            </div>
-                        </div>
-                    `;
-                    resultsDiv.appendChild(loanDiv);
-                });
+                // 🎓 학위복 섹션
+                const gownSection = document.createElement("div");
+                gownSection.style.marginTop = "30px";
+                gownSection.innerHTML = `<h4 style="margin: 20px 0 10px 0; color: #8e44ad; font-size: 1rem; border-bottom: 2px solid #9b59b6; padding-bottom: 6px;">🎓 학위복 대여 내역 (${gownLoans.length}건)</h4>`;
+                if (gownLoans.length === 0) {
+                    gownSection.innerHTML += `<p style="color:#7f8c8d; font-size:0.9em; padding: 10px 0;">대여 중인 학위복이 없습니다.</p>`;
+                } else {
+                    gownLoans.forEach(loan => {
+                        gownSection.appendChild(createLoanElement(loan, true));
+                    });
+                }
+                resultsDiv.appendChild(gownSection);
             })
             .catch(() => {
                 resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
             });
+    }
+
+    function createLoanElement(loan, isGown) {
+        const loanDiv = document.createElement("div");
+        loanDiv.className = "book-item" + (isGown ? " gown-item" : "");
+        const titleIcon = isGown ? "🎓" : "📖";
+        const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+
+        const isOverdue = new Date() > new Date(loan.dueDate);
+        const overdueDays = calculateOverdueDays(loan.dueDate);
+        const overdueBadge = isOverdue
+            ? `<span class="badge badge-due">연체 ${overdueDays}일</span>` : "";
+        const extendedBadge = loan.extensionCount > 0
+            ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
+        const reservationBadge = loan.hasReservation
+            ? `<span class="badge badge-reservation">예약자 있음</span>` : "";
+
+        // 연장 불가: 연체 OR 1회 연장 완료 OR 예약자 있음
+        const extendDisabled = (isOverdue || loan.extensionCount >= 1 || loan.hasReservation)
+            ? "disabled" : "";
+
+        const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
+        loanDiv.innerHTML = `
+            <div class="book-header">
+                <div class="book-info-wrap">
+                    <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
+                    <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
+                    <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
+                    <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
+                </div>
+            </div>
+        `;
+        return loanDiv;
     }
 
     function extendLoan(loanId) {
@@ -376,6 +403,7 @@
 
     function fetchMyReservations() {
         const div = document.getElementById("reservation-results");
+        div.innerHTML = "";
 
         fetch(`/book/myReservations?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
             headers: authHeader()
@@ -386,25 +414,48 @@
                     div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 대여 항목이 없습니다.</p>";
                     return;
                 }
-                div.innerHTML = reservations.map(r => {
-                    const isGown = r.bookTitle.includes("학위복");
-                    const titleIcon = isGown ? "🎓" : "📚";
-                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
-                    const itemClass = "reservation-item" + (isGown ? " gown-reservation" : "");
-                    return `
-                    <div class="${itemClass}">
-                        <div class="reservation-info">
-                            <p><strong>${titleIcon} ${r.bookTitle} ${gownBadge}</strong> &nbsp;
-                               <span class="badge badge-reservation">${r.queueNumber}번 대기</span></p>
-                            <p>예약일: ${formatDate(r.requestDate)}</p>
-                        </div>
-                        <button class="btn-cancel-res" onclick="cancelReservation('${r.reservationId}')">예약 취소</button>
-                    </div>`;
-                }).join("");
+
+                const bookRes = reservations.filter(r => !r.bookTitle.includes("학위복"));
+                const gownRes = reservations.filter(r => r.bookTitle.includes("학위복"));
+
+                let html = "";
+
+                // 📘 도서 예약 목록
+                html += `<h4 style="margin: 15px 0 10px 0; color: #2c3e50; font-size: 0.95rem; border-bottom: 1px solid #3498db; padding-bottom: 4px;">📘 일반 도서 예약 내역 (${bookRes.length}건)</h4>`;
+                if (bookRes.length === 0) {
+                    html += `<p style="color:#7f8c8d; font-size:0.85em; padding: 5px 0;">예약 중인 도서가 없습니다.</p>`;
+                } else {
+                    html += bookRes.map(r => renderReservationItem(r, false)).join("");
+                }
+
+                // 🎓 학위복 예약 목록
+                html += `<h4 style="margin: 25px 0 10px 0; color: #8e44ad; font-size: 0.95rem; border-bottom: 1px solid #9b59b6; padding-bottom: 4px;">🎓 학위복 예약 내역 (${gownRes.length}건)</h4>`;
+                if (gownRes.length === 0) {
+                    html += `<p style="color:#7f8c8d; font-size:0.85em; padding: 5px 0;">예약 중인 학위복이 없습니다.</p>`;
+                } else {
+                    html += gownRes.map(r => renderReservationItem(r, true)).join("");
+                }
+
+                div.innerHTML = html;
             })
             .catch(() => {
                 div.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>예약 목록을 불러오지 못했습니다.</p>";
             });
+    }
+
+    function renderReservationItem(r, isGown) {
+        const titleIcon = isGown ? "🎓" : "📚";
+        const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+        const itemClass = "reservation-item" + (isGown ? " gown-reservation" : "");
+        return `
+        <div class="${itemClass}">
+            <div class="reservation-info">
+                <p><strong>${titleIcon} ${r.bookTitle} ${gownBadge}</strong> &nbsp;
+                   <span class="badge badge-reservation">${r.queueNumber}번 대기</span></p>
+                <p>예약일: ${formatDate(r.requestDate)}</p>
+            </div>
+            <button class="btn-cancel-res" onclick="cancelReservation('${r.reservationId}')">예약 취소</button>
+        </div>`;
     }
 
     function cancelReservation(reservationId) {
