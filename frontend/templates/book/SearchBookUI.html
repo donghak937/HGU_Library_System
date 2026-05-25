@@ -17,6 +17,7 @@
             width: 100%;
             min-height: 100vh;
         }
+<<<<<<< HEAD
 
         /* Sidebar Styles */
         .sidebar {
@@ -101,6 +102,92 @@
             background-color: #dc2626;
         }
 
+=======
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-menu {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            gap: 10px;
+        }
+        .menu-item:hover {
+            background-color: #334155;
+            color: #f8fafc;
+        }
+        .menu-item.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #334155;
+            background-color: #0f172a;
+        }
+        .user-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #user-display {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-logout {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease;
+        }
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
+
+>>>>>>> origin/main
         /* Main Content Styles */
         .main-content {
             flex: 1;
@@ -274,7 +361,10 @@
             <a href="#" class="menu-item" onclick="switchMainTab('gown')">🎓 학위복 대여</a>
             <a href="/loan/ReturnBookUI" class="menu-item">👤 내 서재 (대출/반납)</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
+<<<<<<< HEAD
             <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
+=======
+>>>>>>> origin/main
         </nav>
         <div class="sidebar-footer">
             <div class="user-info-box">
@@ -291,6 +381,7 @@
             <div class="content-card">
                 <h2>🔍 도서 검색</h2>
                 <p class="content-desc">원하는 책의 제목, 저자 또는 카테고리를 활용하여 검색해 보세요.</p>
+<<<<<<< HEAD
 
                 <div class="search-box-row">
                     <div class="form-group">
@@ -302,6 +393,33 @@
                     </div>
                 </div>
 
+                <div class="search-box-row" style="margin-top: 24px;">
+                    <div class="form-group">
+                        <label for="category">카테고리로 검색</label>
+                        <div class="input-with-btn">
+                            <select id="category">
+                                <option value="소설">소설</option>
+                                <option value="컴퓨터공학">컴퓨터공학</option>
+                                <option value="역사">역사</option>
+                                <option value="과학">과학</option>
+                                <option value="경영">경영</option>
+                                <option value="철학">철학</option>
+                                <option value="자기계발">자기계발</option>
+                                <option value="수학">수학</option>
+                            </select>
+                            <button class="btn-action btn-search-secondary" onclick="searchByCategory()">검색</button>
+=======
+                
+                <div class="search-box-row">
+                    <div class="form-group">
+                        <label for="keyword">키워드로 검색 (제목 또는 저자)</label>
+                        <div class="input-with-btn">
+                            <input type="text" id="keyword" placeholder="검색어를 입력하세요 (예: 해리포터)">
+                            <button class="btn-action btn-search-primary" onclick="searchByKeyword()">검색</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="search-box-row" style="margin-top: 24px;">
                     <div class="form-group">
                         <label for="category">카테고리로 검색</label>
@@ -344,12 +462,43 @@
                                 <option value="여성용">여성용 학위복</option>
                             </select>
                             <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByCategory()">검색</button>
+>>>>>>> origin/main
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+<<<<<<< HEAD
+        <!-- Graduation Gown Tab -->
+        <div id="tab-gown-content" class="tab-content">
+            <div class="content-card">
+                <h2>🎓 학위복 대여 및 조회</h2>
+                <p class="content-desc">대여 가능한 학사복, 석사복의 실물 수량 및 대출 가능 여부를 확인하세요.</p>
+                <div class="gown-info-banner" style="margin-bottom: 24px;">
+                    💡 <strong>대여 안내:</strong> 학위복은 졸업 시즌 대상 대여 품목으로, 일반 도서와는 별개의 대출 규칙이 적용될 수 있습니다.
+                </div>
+
+                <div class="search-box-row">
+                    <div class="form-group">
+                        <label for="gown-category-select">학위복 카테고리 선택</label>
+                        <div class="input-with-btn">
+                            <select id="gown-category-select">
+                                <option value="전체">전체 학위복</option>
+                                <option value="학사">학사 학위복</option>
+                                <option value="석사">석사 학위복</option>
+                                <option value="남성용">남성용 학위복</option>
+                                <option value="여성용">여성용 학위복</option>
+                            </select>
+                            <button class="btn-action" style="background-color: #8e44ad;" onclick="searchGownsByCategory()">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+=======
+>>>>>>> origin/main
         <!-- Details Panel (Reused by both tabs) -->
         <div id="book-detail" class="detail-panel"></div>
 
@@ -397,8 +546,11 @@
         if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
             const adminLink = document.getElementById("sidebar-admin-link");
             if (adminLink) adminLink.style.display = "flex";
+<<<<<<< HEAD
             const overdueLink = document.getElementById("sidebar-overdue-link");
             if (overdueLink) overdueLink.style.display = "flex";
+=======
+>>>>>>> origin/main
         }
     } else {
         const sidebarFooter = document.querySelector(".sidebar-footer");
@@ -488,7 +640,7 @@
                 ${isGown ? '' : `<span class="detail-label">ISBN</span><span>${book.isbn}</span>`}
                 <span class="detail-label">Category</span><span>${book.category}</span>
             </div>
-            <div id="availability-${book.bookId}" class="availability-summary">대출 가능 상태를 불러오는 중...</div>
+            <div id="availability-${book.bookId}" class="availability-summary">${isGown ? '대여 가능 상태를 불러오는 중...' : '대출 가능 상태를 불러오는 중...'}</div>
         `;
         showAvailabilityStatus(book.bookId, isGown);
         detailDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -506,9 +658,10 @@
                 }
                 const availableCount = activeCopies.filter(c => c.status === "대출가능").length;
                 const unit = isGown ? "벌" : "권";
+                const availabilityText = isGown ? "대여 가능" : "대출 가능";
                 availabilityDiv.innerHTML = `
                     <span class="detail-label">Availability</span>
-                    <span>대출 가능 ${availableCount}${unit} / 전체 ${activeCopies.length}${unit}</span>
+                    <span>${availabilityText} ${availableCount}${unit} / 전체 ${activeCopies.length}${unit}</span>
                 `;
             })
             .catch(() => { availabilityDiv.textContent = "상태를 불러오지 못했습니다."; });
@@ -542,20 +695,30 @@
                     return;
                 }
 
+                const isGown = panel.closest('.book-item').classList.contains('gown-item');
+
                 let rows = activeCopies.map(c => {
                     let badgeClass = "badge-other";
-                    if (c.status === "대출가능") badgeClass = "badge-available";
-                    else if (c.status === "대출중") badgeClass = "badge-loaned";
+                    let statusText = c.status;
+
+                    if (c.status === "대출가능") {
+                        badgeClass = "badge-available";
+                        if (isGown) statusText = "대여가능";
+                    } else if (c.status === "대출중") {
+                        badgeClass = "badge-loaned";
+                        if (isGown) statusText = "대여중";
+                    }
 
                 let actionBtn = "";
 
                 // 로그인한 사용자만 버튼 표시
                 if (CURRENT_MEMBER_ID) {
                     if (c.status === "대출가능") {
+                        const btnText = isGown ? "대여하기" : "대출하기";
                         actionBtn = `
                             <button class="btn-borrow-copy"
                                 onclick="requestBorrowCopy('${c.bookId}', '${bookId}')">
-                                대출하기
+                                ${btnText}
                             </button>
                         `;
                     } else if (c.status === "대출중") {
@@ -566,7 +729,8 @@
                             </button>
                         `;
                     } else {
-                        actionBtn = `<span style="color:#7f8c8d; font-size:0.85em; font-weight:bold;">대출/예약 불가</span>`;
+                        const denyText = isGown ? "대여/예약 불가" : "대출/예약 불가";
+                        actionBtn = `<span style="color:#7f8c8d; font-size:0.85em; font-weight:bold;">${denyText}</span>`;
                     }
                 }
 
@@ -574,7 +738,7 @@
                         <td>${c.copyId}</td>
                         <td>${c.barcode}</td>
                         <td>${c.location}</td>
-                        <td><span class="badge ${badgeClass}">${c.status}</span></td>
+                        <td><span class="badge ${badgeClass}">${statusText}</span></td>
                         <td>${actionBtn}</td>
                     </tr>`;
                 }).join("");
@@ -596,6 +760,9 @@
     // ── 대출 ────────────────────────────────────────────────
 
     function requestBorrowCopy(bookId, panelBookId) {
+        const panel = document.getElementById("copies-" + panelBookId);
+        const isGown = panel && panel.closest('.book-item').classList.contains('gown-item');
+
         fetch("/loan/borrowBook", {
             method: "POST",
             headers: {
@@ -607,10 +774,14 @@
         .then(res => res.json())
         .then(success => {
             if (success) {
-                showToast("✅ 대출 되었습니다");
+                const toastMsg = isGown ? "✅ 대여 되었습니다" : "✅ 대출 되었습니다";
+                showToast(toastMsg);
                 reloadCopyPanel(panelBookId);
             } else {
-                alert("대출에 실패했습니다. 정지 상태 또는 대출 한도를 확인해주세요.");
+                const failMsg = isGown
+                    ? "대여에 실패했습니다. 정지 상태 또는 대여 한도를 확인해주세요."
+                    : "대출에 실패했습니다. 정지 상태 또는 대출 한도를 확인해주세요.";
+                alert(failMsg);
             }
         })
         .catch(() => alert("서버와의 통신 중 오류가 발생했습니다."));
@@ -714,14 +885,22 @@
         document.querySelectorAll('.menu-item').forEach(el => {
             el.classList.remove('active');
         });
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> origin/main
         // Clear results and detail panel
         document.getElementById('results').innerHTML = "";
         document.getElementById('results-card').style.display = "none";
         const detailDiv = document.getElementById('book-detail');
         detailDiv.innerHTML = "";
         detailDiv.classList.remove("open");
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> origin/main
         if (tabId === 'book') {
             document.querySelector('.menu-item[onclick*="book"]').classList.add('active');
             document.getElementById('tab-book-content').classList.add('active');

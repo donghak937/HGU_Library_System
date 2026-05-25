@@ -35,7 +35,18 @@ public class BookController {
     @ResponseBody
     public List<Book> searchBooks(@RequestParam String keyword) {
         setSearchStrategy(keywordSearchStrategy);
-        return searchStrategy.search(keyword);
+        return searchStrategy.search(keyword).stream()
+                .filter(book -> !"학위복".equals(book.getCategory()))
+                .toList();
+    }
+
+    @GetMapping("/searchGowns")
+    @ResponseBody
+    public List<Book> searchGowns(@RequestParam String keyword) {
+        setSearchStrategy(keywordSearchStrategy);
+        return searchStrategy.search(keyword).stream()
+                .filter(book -> "학위복".equals(book.getCategory()))
+                .toList();
     }
 
     @GetMapping("/searchBooksByCategory")
