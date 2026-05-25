@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import com.back.library.domain.book.state.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,11 +43,7 @@ public class LoanService {
             boolean hasReservation = reservationRepository
                     .countByBookIdAndStatus(book.getBookId(), "대기중") > 0;
 
-            int overdueDays = 0;
-            if (loan.getDueDate() != null && loan.getDueDate().before(new Date())) {
-                long diff = new Date().getTime() - loan.getDueDate().getTime();
-                overdueDays = (int) TimeUnit.MILLISECONDS.toDays(diff);
-            }
+            int overdueDays = getLoanState(loan).calculateOverdueDays(loan);
 
             result.add(new MyLoanResponse(
                     loan.getLoanId(),
@@ -118,5 +115,11 @@ public class LoanService {
                 });
 
         return new BorrowBookResponse(true, "대출이 완료되었습니다.", loan.getLoanId());
+    }
+
+    private LoanState getLoanState(Loan loan) {
+        if (loan.getReturnDate() != null) return new ReturnedState();
+        if (loan.getDueDate() != null && loan.getDueDate().before(new Date())) return new OverdueState();
+        return new BorrowedState();
     }
 }

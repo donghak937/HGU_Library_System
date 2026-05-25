@@ -8,7 +8,7 @@
 | 계정관리 (Account Management) | 로그인(아이디/비밀번호 인증)                                  |            1 |
 | 계정관리 (Account Management) | 로그아웃                                              |            1 |
 | 도서 검색 (Book Search)       | 키워드로 도서검색 (searchBooks) / (searchBooksByCategory) |            1 |
-| 도서 검색 (Book Search)       | 도서 상세 정보 조회 (viewBookDetails)                     |            1 |
+| 도서 검색 (Book Search)       | 상세 정보 조회 (viewItemDetail)                     |            1 |
 | 도서 검색 (Book Search)       | 도서 가용 여부 확인 (checkBookAvailability)               |            1 |
 | 도서 대출 (Book Loan)         | 도서 대출 처리 (borrowBook)                             |            1 |
 | 도서 대출 (Book Loan)         | 대출 한도 확인 (checkLoanLimit)                         |            1 |

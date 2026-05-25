@@ -24,12 +24,15 @@ public class Account {
 
     private String status;
 
-    public Account(String accountId, String username, String passwordHash, String refreshToken, String status) {
+    private String role; // "STUDENT", "PROFESSOR", "LIBRARIAN", "ADMIN"
+
+    public Account(String accountId, String username, String passwordHash, String refreshToken, String status, String role) {
         this.accountId = accountId;
         this.username = username;
         this.passwordHash = passwordHash;
         this.refreshToken = refreshToken;
         this.status = status;
+        this.role = role;
     }
 
     public void updateRefreshToken(String refreshToken) {

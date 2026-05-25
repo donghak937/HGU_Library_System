@@ -29,6 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/account/refresh",
 
                         "/book/SearchBookUI",
+                        "/book/admin/BookManagementUI",
 
                         "/book/searchBooks",
                         "/book/searchBooksByCategory",

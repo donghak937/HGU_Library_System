@@ -112,11 +112,37 @@
 
                 // account 5개 (로그인 테스트용)
                 BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"),null, "ACTIVE"));
-                accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), null, "ACTIVE"));
-                accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), null, "ACTIVE"));
-                accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), null, "ACTIVE"));
-                accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), null, "SUSPENDED"));
+                accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"),null, "ACTIVE", "STUDENT"));
+                accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+                accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), null, "ACTIVE", "PROFESSOR"));
+                accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+                accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), null, "SUSPENDED", "STUDENT"));
+
+                // 사서 및 어드민 계정/회원 등록
+                Member mLibrarian = new Member();
+                mLibrarian.setUserId("librarian");
+                mLibrarian.setMaxLoanLimit(10);
+                mLibrarian.setLoanPeriod(30);
+                mLibrarian.setSuspended(false);
+                memberRepository.save(mLibrarian);
+
+                Member mAdmin = new Member();
+                mAdmin.setUserId("admin");
+                mAdmin.setMaxLoanLimit(10);
+                mAdmin.setLoanPeriod(30);
+                mAdmin.setSuspended(false);
+                memberRepository.save(mAdmin);
+
+                Member mPohang = new Member();
+                mPohang.setUserId("pohang_user");
+                mPohang.setMaxLoanLimit(1);
+                mPohang.setLoanPeriod(7);
+                mPohang.setSuspended(false);
+                memberRepository.save(mPohang);
+
+                accountRepository.save(new Account("A-006", "librarian", encoder.encode("1234"), null, "ACTIVE", "LIBRARIAN"));
+                accountRepository.save(new Account("A-007", "admin", encoder.encode("1234"), null, "ACTIVE", "ADMIN"));
+                accountRepository.save(new Account("A-008", "pohang_user", encoder.encode("1234"), null, "ACTIVE", "CITIZEN"));
 
 
                 // ════════════════════════════════════════════════
@@ -282,6 +308,14 @@
                 saveBook(bookRepository, "B-030", "수학 귀신", "한스 마그누스 엔첸스베르거", "비룡소", "9788949104195", "수학");
                 saveCopy(bookCopyRepository, "C-053", "B-030", "BC-053", "대출가능", "2F-H03");
                 saveCopy(bookCopyRepository, "C-054", "B-030", "BC-054", "대출가능", "2F-H03");
+
+                // ── 학위복 ────────────────────────────────────────
+                saveBook(bookRepository, "B-031", "학사 학위복", "N/A", "HGU", "N/A", "학위복");
+                saveCopy(bookCopyRepository, "C-055", "B-031", "BC-055", "대출가능", "학위복 보관실");
+                saveCopy(bookCopyRepository, "C-056", "B-031", "BC-056", "대출가능", "학위복 보관실");
+
+                saveBook(bookRepository, "B-032", "석사 학위복", "N/A", "HGU", "N/A", "학위복");
+                saveCopy(bookCopyRepository, "C-057", "B-032", "BC-057", "대출가능", "학위복 보관실");
 
 
                 // ════════════════════════════════════════════════
