@@ -4,11 +4,136 @@
     <meta charset="UTF-8">
     <title>HGU 도서 반납</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 40px 0; box-sizing: border-box; }
-        .search-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 640px; }
-        h1 { color: #2c3e50; text-align: center; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+        }
+        .app-layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
 
-        #results { margin-top: 30px; }
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-menu {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            gap: 10px;
+        }
+        .menu-item:hover {
+            background-color: #334155;
+            color: #f8fafc;
+        }
+        .menu-item.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #334155;
+            background-color: #0f172a;
+        }
+        .user-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #user-display {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-logout {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease;
+        }
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            overflow-y: auto;
+            width: 100%;
+        }
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+        .content-card h2 {
+            margin: 0 0 8px 0;
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .content-desc {
+            margin: 0 0 16px 0;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        #results { margin-top: 20px; }
 
         /* 책 카드 */
         .book-item { background: #ecf0f1; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid #e74c3c; overflow: hidden; }
@@ -39,8 +164,6 @@
         .btn-extend:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
         /* 예약 섹션 */
-        .reservation-section { margin-top: 30px; border-top: 2px solid #ecf0f1; padding-top: 20px; }
-        .reservation-section h2 { color: #2c3e50; font-size: 1.1em; margin: 0 0 12px 0; }
         .reservation-item { background: #eaf4fb; margin-bottom: 8px; border-radius: 6px; border-left: 5px solid #2980b9; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
         .reservation-info { flex: 1; }
         .reservation-info p { margin: 0 0 4px 0; color: #34495e; font-size: 0.9em; }
@@ -51,10 +174,6 @@
         #toast { position: fixed; top: 70px; right: 24px; background-color: #27ae60; color: white; padding: 14px 22px; border-radius: 8px; font-weight: bold; font-size: 0.95em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 9999; }
         #toast.show { opacity: 1; }
 
-        /* 상단 회원명 */
-        #user-badge { position: fixed; top: 24px; right: 24px; background-color: #2c3e50; color: white; padding: 10px 16px; border-radius: 8px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; }
-        #logout-btn { width: auto; padding: 6px 10px; margin: 0; background-color: #e74c3c; font-size: 0.8em; }
-        #logout-btn:hover { background-color: #c0392b; }
         .gown-item { border-left-color: #9b59b6 !important; }
         .gown-reservation { border-left-color: #9b59b6 !important; }
 
@@ -66,24 +185,58 @@
 <body>
 
 <div id="toast"></div>
-<div id="user-badge">
-    <span id="user-name"></span>
-    <button id="logout-btn" onclick="logout()">로그아웃</button>
-</div>
 
-<div class="search-container">
-    <h1>📚 HGU 내 서재 (대출/반납)</h1>
+<div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🎓 HGU Library</h2>
+        </div>
+        <nav class="sidebar-menu">
+            <a href="/book/SearchBookUI" class="menu-item">📘 도서 검색</a>
+            <a href="/book/SearchBookUI?tab=gown" class="menu-item">🎓 학위복 대여</a>
+            <a href="#" class="menu-item active">👤 내 서재 (대출/반납)</a>
+            <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
+            <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info-box">
+                <span id="user-display">👤 로딩중...</span>
+                <button class="btn-logout" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+    </aside>
 
-    <div id="results"></div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Book Loans Card -->
+        <div class="content-card" id="book-loans-card">
+            <h2>📚 일반 도서 대출 내역</h2>
+            <p class="content-desc">현재 대출 중인 일반 도서의 연체 상태를 확인하고 연장 및 반납을 처리할 수 있습니다.</p>
+            <div id="book-loans-results"></div>
+        </div>
 
-    <div class="reservation-section">
-        <h2>📋 내 예약 목록</h2>
-        <div id="reservation-results"></div>
-    </div>
+        <!-- Gown Loans Card -->
+        <div class="content-card" id="gown-loans-card" style="margin-top: 0;">
+            <h2>🎓 학위복 대여 내역</h2>
+            <p class="content-desc">현재 대여 중인 학위복의 실물 수량 상태를 확인하고 반납을 처리할 수 있습니다.</p>
+            <div id="gown-loans-results"></div>
+        </div>
 
-    <div class="nav-links">
-        <a href="/book/SearchBookUI">← 도서 검색으로 돌아가기</a>
-    </div>
+        <!-- Book Reservation Card -->
+        <div class="content-card reservation-section" id="book-reservations-card" style="margin-top: 0;">
+            <h2>📋 일반 도서 예약 목록</h2>
+            <p class="content-desc">반납 대기 중인 일반 도서의 예약 신청 내역 및 현재 대기 순번을 확인할 수 있습니다.</p>
+            <div id="book-reservations-results"></div>
+        </div>
+
+        <!-- Gown Reservation Card -->
+        <div class="content-card reservation-section" id="gown-reservations-card" style="margin-top: 0;">
+            <h2>🎓 학위복 예약 목록</h2>
+            <p class="content-desc">대여 대기 중인 학위복의 예약 신청 내역 및 현재 대기 순번을 확인할 수 있습니다.</p>
+            <div id="gown-reservations-results"></div>
+        </div>
+    </main>
 </div>
 
 <script>
@@ -103,11 +256,19 @@
     }
 
     const payload = parseJwt(token);
-
     const CURRENT_MEMBER_ID = payload.username;
 
-    document.getElementById("user-name").textContent =
-    "👤 " + CURRENT_MEMBER_ID;
+    const userDisplay = document.getElementById("user-display");
+    if (userDisplay) {
+        userDisplay.textContent = "👤 " + CURRENT_MEMBER_ID + " (" + payload.role + ")";
+    }
+
+    if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+        const adminLink = document.getElementById("sidebar-admin-link");
+        if (adminLink) adminLink.style.display = "flex";
+        const overdueLink = document.getElementById("sidebar-overdue-link");
+        if (overdueLink) overdueLink.style.display = "flex";
+    }
 
     window.onload = function() {
         fetchMyLoans();
@@ -129,8 +290,10 @@
     // ── 대출 목록 ────────────────────────────────────────────
 
     function fetchMyLoans() {
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "<p style='text-align:center;'>조회 중...</p>";
+        const bookDiv = document.getElementById("book-loans-results");
+        const gownDiv = document.getElementById("gown-loans-results");
+        bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
+        gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
 
         fetch(`/loan/myLoans?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
             headers: {
@@ -139,52 +302,77 @@
         })
             .then(res => res.json())
             .then(loans => {
-                resultsDiv.innerHTML = "";
-                if (loans.length === 0) {
-                    resultsDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold;'>대출 중인 대여 항목이 없습니다.</p>";
-                    return;
+                bookDiv.innerHTML = "";
+                gownDiv.innerHTML = "";
+
+                const bookLoans = loans.filter(loan => !loan.bookTitle.includes("학위복"));
+                const gownLoans = loans.filter(loan => loan.bookTitle.includes("학위복"));
+
+                // Update counts in header
+                const bookTitle = document.querySelector("#book-loans-card h2");
+                bookTitle.innerHTML = `📚 일반 도서 대출 내역 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${bookLoans.length}권)</span>`;
+
+                const gownTitle = document.querySelector("#gown-loans-card h2");
+                gownTitle.innerHTML = `🎓 학위복 대여 내역 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${gownLoans.length}벌)</span>`;
+
+                // Render books
+                if (bookLoans.length === 0) {
+                    bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>대출 중인 도서가 없습니다.</p>";
+                } else {
+                    bookLoans.forEach(loan => {
+                        bookDiv.appendChild(createLoanElement(loan, false));
+                    });
                 }
 
-                loans.forEach(loan => {
-                    const loanDiv = document.createElement("div");
-                    const isGown = loan.bookTitle.includes("학위복");
-                    loanDiv.className = "book-item" + (isGown ? " gown-item" : "");
-                    const titleIcon = isGown ? "🎓" : "📖";
-                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
-
-                    const isOverdue = new Date() > new Date(loan.dueDate);
-                    const overdueDays = calculateOverdueDays(loan.dueDate);
-                    const overdueBadge = isOverdue
-                        ? `<span class="badge badge-due">연체 ${overdueDays}일</span>` : "";
-                    const extendedBadge = loan.extensionCount > 0
-                        ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
-                    const reservationBadge = loan.hasReservation
-                        ? `<span class="badge badge-reservation">예약자 있음</span>` : "";
-
-                    // 연장 불가: 연체 OR 1회 연장 완료 OR 예약자 있음
-                    const extendDisabled = (isOverdue || loan.extensionCount >= 1 || loan.hasReservation)
-                        ? "disabled" : "";
-
-                    const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
-                    loanDiv.innerHTML = `
-                        <div class="book-header">
-                            <div class="book-info-wrap">
-                                <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
-                                <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
-                                <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
-                                <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
-                            </div>
-                        </div>
-                    `;
-                    resultsDiv.appendChild(loanDiv);
-                });
+                // Render gowns
+                if (gownLoans.length === 0) {
+                    gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>대여 중인 학위복이 없습니다.</p>";
+                } else {
+                    gownLoans.forEach(loan => {
+                        gownDiv.appendChild(createLoanElement(loan, true));
+                    });
+                }
             })
             .catch(() => {
-                resultsDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
+                bookDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
+                gownDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>조회 중 오류가 발생했습니다.</p>";
             });
+    }
+
+    function createLoanElement(loan, isGown) {
+        const loanDiv = document.createElement("div");
+        loanDiv.className = "book-item" + (isGown ? " gown-item" : "");
+        const titleIcon = isGown ? "🎓" : "📖";
+        const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+
+        const isOverdue = new Date() > new Date(loan.dueDate);
+        const overdueDays = calculateOverdueDays(loan.dueDate);
+        const overdueBadge = isOverdue
+            ? `<span class="badge badge-due">연체 ${overdueDays}일</span>` : "";
+        const extendedBadge = loan.extensionCount > 0
+            ? `<span class="badge badge-extended">연장 ${loan.extensionCount}회</span>` : "";
+        const reservationBadge = loan.hasReservation
+            ? `<span class="badge badge-reservation">예약자 있음</span>` : "";
+
+        // 연장 불가: 연체 OR 1회 연장 완료 OR 예약자 있음
+        const extendDisabled = (isOverdue || loan.extensionCount >= 1 || loan.hasReservation)
+            ? "disabled" : "";
+
+        const authorInfo = isGown ? "" : `저자: ${loan.author} | `;
+        loanDiv.innerHTML = `
+            <div class="book-header">
+                <div class="book-info-wrap">
+                    <p class="book-title">${titleIcon} ${loan.bookTitle} ${gownBadge} ${overdueBadge} ${extendedBadge} ${reservationBadge}</p>
+                    <p class="book-info">${authorInfo}바코드: ${loan.barcode}</p>
+                    <p class="book-info">대출일: ${formatDate(loan.loanDate)} | 반납기한: <strong>${formatDate(loan.dueDate)}</strong></p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-extend" onclick="extendLoan('${loan.loanId}')" ${extendDisabled}>📅 연장하기</button>
+                    <button class="btn-return" onclick="returnBook('${loan.loanId}')">반납하기</button>
+                </div>
+            </div>
+        `;
+        return loanDiv;
     }
 
     function extendLoan(loanId) {
@@ -229,36 +417,59 @@
     // ── 예약 ────
 
     function fetchMyReservations() {
-        const div = document.getElementById("reservation-results");
+        const bookDiv = document.getElementById("book-reservations-results");
+        const gownDiv = document.getElementById("gown-reservations-results");
+        bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
+        gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>조회 중...</p>";
 
         fetch(`/book/myReservations?memberId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
             headers: authHeader()
         })
             .then(res => res.json())
             .then(reservations => {
-                if (reservations.length === 0) {
-                    div.innerHTML = "<p style='color:#7f8c8d; font-size:0.9em;'>예약 중인 대여 항목이 없습니다.</p>";
-                    return;
+                bookDiv.innerHTML = "";
+                gownDiv.innerHTML = "";
+
+                const bookRes = reservations.filter(r => !r.bookTitle.includes("학위복"));
+                const gownRes = reservations.filter(r => r.bookTitle.includes("학위복"));
+
+                // Update counts and render books
+                const bookTitle = document.querySelector("#book-reservations-card h2");
+                bookTitle.innerHTML = `📋 일반 도서 예약 목록 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${bookRes.length}권)</span>`;
+                if (bookRes.length === 0) {
+                    bookDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>예약 중인 도서가 없습니다.</p>";
+                } else {
+                    bookDiv.innerHTML = bookRes.map(r => renderReservationItem(r, false)).join("");
                 }
-                div.innerHTML = reservations.map(r => {
-                    const isGown = r.bookTitle.includes("학위복");
-                    const titleIcon = isGown ? "🎓" : "📚";
-                    const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
-                    const itemClass = "reservation-item" + (isGown ? " gown-reservation" : "");
-                    return `
-                    <div class="${itemClass}">
-                        <div class="reservation-info">
-                            <p><strong>${titleIcon} ${r.bookTitle} ${gownBadge}</strong> &nbsp;
-                               <span class="badge badge-reservation">${r.queueNumber}번 대기</span></p>
-                            <p>예약일: ${formatDate(r.requestDate)}</p>
-                        </div>
-                        <button class="btn-cancel-res" onclick="cancelReservation('${r.reservationId}')">예약 취소</button>
-                    </div>`;
-                }).join("");
+
+                // Update counts and render gowns
+                const gownTitle = document.querySelector("#gown-reservations-card h2");
+                gownTitle.innerHTML = `🎓 학위복 예약 목록 <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 8px;">(${gownRes.length}벌)</span>`;
+                if (gownRes.length === 0) {
+                    gownDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d; font-weight:bold; padding: 15px 0;'>예약 중인 학위복이 없습니다.</p>";
+                } else {
+                    gownDiv.innerHTML = gownRes.map(r => renderReservationItem(r, true)).join("");
+                }
             })
             .catch(() => {
-                div.innerHTML = "<p style='color:#e74c3c; font-size:0.9em;'>예약 목록을 불러오지 못했습니다.</p>";
+                bookDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>예약 목록을 불러오지 못했습니다.</p>";
+                gownDiv.innerHTML = "<p style='text-align:center; color:#e74c3c;'>예약 목록을 불러오지 못했습니다.</p>";
             });
+    }
+
+    function renderReservationItem(r, isGown) {
+        const titleIcon = isGown ? "🎓" : "📚";
+        const gownBadge = isGown ? `<span class="badge" style="background-color:rgba(155, 89, 182, 0.15); color:#8e44ad; margin-left:8px; padding:2px 8px; vertical-align:middle;">학위복</span>` : "";
+        const itemClass = "reservation-item" + (isGown ? " gown-reservation" : "");
+        return `
+        <div class="${itemClass}">
+            <div class="reservation-info">
+                <p><strong>${titleIcon} ${r.bookTitle} ${gownBadge}</strong> &nbsp;
+                   <span class="badge badge-reservation">${r.queueNumber}번 대기</span></p>
+                <p>예약일: ${formatDate(r.requestDate)}</p>
+            </div>
+            <button class="btn-cancel-res" onclick="cancelReservation('${r.reservationId}')">예약 취소</button>
+        </div>`;
     }
 
     function cancelReservation(reservationId) {
