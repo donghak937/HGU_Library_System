@@ -2,7 +2,9 @@ package com.back.library.domain.user.controller;
 
 import com.back.library.domain.user.dto.request.LoginRequest;
 import com.back.library.domain.user.entity.Account;
+import com.back.library.domain.user.entity.Member;
 import com.back.library.domain.user.repository.AccountRepository;
+import com.back.library.domain.user.repository.MemberRepository;
 import com.back.library.global.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -24,9 +26,28 @@ import jakarta.servlet.http.Cookie;
 public class AccountController {
 
     private final AccountRepository accountRepository;
+    private final MemberRepository memberRepository;
 
     // Singleton 객체 사용
     private final JwtUtil jwtUtil = JwtUtil.getInstance();
+
+    // 회원 상태 조회 (정지 상태 포함)
+    @GetMapping("/memberStatus")
+    @ResponseBody
+    public Map<String, Object> getMemberStatus(@RequestParam String userId) {
+        return memberRepository.findById(userId)
+                .map(member -> {
+                    Map<String, Object> result = new java.util.HashMap<>();
+                    result.put("success", true);
+                    result.put("suspended", member.isSuspended());
+                    result.put("suspensionEndDate", member.getSuspensionEndDate());
+                    result.put("maxLoanLimit", member.getMaxLoanLimit());
+                    result.put("loanPeriod", member.getLoanPeriod());
+                    return result;
+                })
+                .orElse(Map.of("success", false, "message", "존재하지 않는 회원입니다."));
+    }
+
     // 로그인 UI
     @GetMapping("/loginUI")
     public String showLoginUI() {

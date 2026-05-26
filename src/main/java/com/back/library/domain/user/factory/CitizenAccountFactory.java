@@ -3,28 +3,21 @@ package com.back.library.domain.user.factory;
 import com.back.library.domain.user.entity.Account;
 
 public class CitizenAccountFactory
-        extends AccountFactory {
+                extends AccountFactory {
 
-    @Override
-    public Account createAccount(
-            String accountId,
-            String username,
-            String passwordHash
-    ) {
+        @Override
+        public Account createAccount(
+                        String accountId,
+                        String username,
+                        String passwordHash) {
 
-        return new Account(
+                return new Account(
 
-                accountId,
-
-                username,
-
-                passwordHash,
-
-                null,
-
-                "ACTIVE",
-
-                "CITIZEN"
-        );
-    }
+                                accountId,
+                                username,
+                                passwordHash,
+                                null,
+                                "ACTIVE",
+                                "CITIZEN");
+        }
 }
