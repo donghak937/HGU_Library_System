@@ -1,13 +1,22 @@
 package com.back.library.domain.user.repository;
 
-import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.user.entity.Account;
+
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
 
-import java.util.Optional;  //
+import java.util.Optional;
 
-@Repository
-public interface AccountRepository extends JpaRepository<Account, String> {
-    Optional<Account> findByUsername(String username);
+public interface AccountRepository
+        extends JpaRepository<Account, String> {
+
+    Optional<Account> findByUsername(
+            String username
+    );
+
+    @Query("""
+        SELECT MAX(a.accountId)
+        FROM Account a
+    """)
+    String findMaxAccountId();
 }
