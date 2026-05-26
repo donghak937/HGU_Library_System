@@ -26,6 +26,9 @@ public class LoanService {
     private final BookRepository bookRepository;
     private final ReservationRepository reservationRepository;
 
+    private final BookBorrowProcessor bookBorrowProcessor;
+    private final GownBorrowProcessor gownBorrowProcessor;
+
     public List<MyLoanResponse> getActiveLoans(String memberId) {
         List<Loan> activeLoans = loanRepository.findByUserIdAndStatus(memberId, "대출중");
         List<MyLoanResponse> result = new ArrayList<>();
@@ -63,58 +66,17 @@ public class LoanService {
 
     @Transactional
     public BorrowBookResponse createLoan(BorrowBookRequest request, Long currentUserId) {
-        String memberId = request.getMemberId();
-        String bookId   = request.getBookId();
+        String bookId = request.getBookId();
 
-        Optional<Member> memberOpt = memberRepository.findById(memberId);
-        if (memberOpt.isEmpty()) return new BorrowBookResponse(false, "존재하지 않는 회원입니다.", null);
-        Member member = memberOpt.get();
+        boolean isGown = bookRepository.findById(bookId)
+                .map(book -> "학위복".equals(book.getCategory()))
+                .orElse(false);
 
-        if (member.isSuspended()) {
-            if (member.getSuspensionEndDate() == null || new Date().before(member.getSuspensionEndDate())) {
-                return new BorrowBookResponse(false, "대출 정지 상태입니다.", null);
-            }
-            member.setSuspended(false);
-            member.setSuspensionEndDate(null);
-            memberRepository.save(member);
+        if (isGown) {
+            return gownBorrowProcessor.borrow(request.getMemberId(), bookId);
+        } else {
+            return bookBorrowProcessor.borrow(request.getMemberId(), bookId);
         }
-
-        long activeLoans = loanRepository.countByUserIdAndStatus(memberId, "대출중");
-        if (activeLoans >= member.getMaxLoanLimit()) {
-            return new BorrowBookResponse(false, "대출 한도를 초과했습니다.", null);
-        }
-
-        Optional<BookCopy> copyOpt = bookCopyRepository.findFirstByBookIdAndStatus(bookId, "대출가능");
-        if (copyOpt.isEmpty()) {
-            return new BorrowBookResponse(false, "대출 가능한 사본이 없습니다.", null);
-        }
-        BookCopy bookCopy = copyOpt.get();
-
-        Calendar cal = Calendar.getInstance();
-        Date loanDate = cal.getTime();
-        cal.add(Calendar.DAY_OF_MONTH, member.getLoanPeriod());
-        Date dueDate = cal.getTime();
-
-        Loan loan = new Loan();
-        loan.setLoanId(UUID.randomUUID().toString());
-        loan.setUserId(memberId);
-        loan.setCopyId(bookCopy.getCopyId());
-        loan.setLoanDate(loanDate);
-        loan.setDueDate(dueDate);
-        loan.setStatus("대출중");
-        loanRepository.save(loan);
-
-        bookCopy.setStatus("대출중");
-        bookCopyRepository.save(bookCopy);
-
-        // 해당 유저의 이 책 예약이 있으면 완료 처리
-        reservationRepository.findByBookIdAndUserIdAndStatus(bookId, memberId, "대기중")
-                .ifPresent(r -> {
-                    r.setStatus("완료됨");
-                    reservationRepository.save(r);
-                });
-
-        return new BorrowBookResponse(true, "대출이 완료되었습니다.", loan.getLoanId());
     }
 
     private LoanState getLoanState(Loan loan) {
