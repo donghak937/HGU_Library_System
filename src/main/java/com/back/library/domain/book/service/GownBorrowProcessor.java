@@ -23,7 +23,7 @@ public class GownBorrowProcessor extends BorrowProcessor {
     @Override
     protected void validateSpecificRules(Member member, String bookId) throws IllegalArgumentException {
         // 포항 시민(pohang_user)은 학위복 대여 불가
-        if ("pohang_user".equals(member.getUserId())) {
+        if (member.getMaxLoanLimit() == 1) {
             throw new IllegalArgumentException("포항 지역 주민은 학위복 대여가 불가능합니다.");
         }
     }
