@@ -72,9 +72,8 @@ public class LoanController {
 
     @PostMapping("/borrowBook")
     @ResponseBody
-    public boolean borrowBook(@RequestBody BorrowBookRequest request) {
-        BorrowBookResponse response = loanService.createLoan(request, null);
-        return response.isSuccess();
+    public BorrowBookResponse borrowBook(@RequestBody BorrowBookRequest request) {
+        return loanService.createLoan(request, null);
     }
 
     /**

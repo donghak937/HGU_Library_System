@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.back.library.domain.user.factory.AccountFactory;
+import com.back.library.domain.user.factory.CitizenAccountFactory;
+
 import java.util.Map;
 
 @Controller
@@ -92,8 +95,11 @@ public class RegisterController {
                 );
 
         // Factory Method Pattern 사용
+        AccountFactory factory =
+                new CitizenAccountFactory();
+
         Account account =
-                AccountFactory.createCitizenAccount(
+                factory.createAccount(
 
                         accountId,
 
