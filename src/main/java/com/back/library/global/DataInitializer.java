@@ -5,7 +5,6 @@ import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.Loan;
 
-
 import com.back.library.domain.user.repository.AccountRepository;
 import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.BookCopyRepository;
@@ -26,50 +25,66 @@ import java.util.Date;
 @Component
 public class DataInitializer {
 
+    // ════════════════════════════════════════════════
+    // 날짜 헬퍼 유틸리티
+    // ════════════════════════════════════════════════
+    /** 오늘 기준으로 N일 후/전 Date를 반환. 음수=과거, 양수=미래 */
+    private static Date daysFromNow(int days) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        return cal.getTime();
+    }
+
     @Bean
     public CommandLineRunner initData(MemberRepository memberRepository,
-                                      BookCopyRepository bookCopyRepository,
-                                      LoanRepository loanRepository,
-                                      BookRepository bookRepository,
-                                      AccountRepository accountRepository) {
+            BookCopyRepository bookCopyRepository,
+            LoanRepository loanRepository,
+            BookRepository bookRepository,
+            AccountRepository accountRepository) {
         return args -> {
 
             // ════════════════════════════════════════════════
-            // 날짜 헬퍼
+            // 날짜 정의 (오늘 기준 상대값 → 앱 실행일에 자동 최신화)
             // ════════════════════════════════════════════════
-            Calendar cal = Calendar.getInstance();
 
-            // 과거 날짜 생성 헬퍼용 (대출일)
-            cal.add(Calendar.DAY_OF_MONTH, -10); Date tenDaysAgo = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -20); Date twentyDaysAgo = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -5);  Date fiveDaysAgo = cal.getTime();
+            // ── 대출일 (과거) ──────────────────────────────
+            Date loan3dAgo = daysFromNow(-3); // 3일 전 대출
+            Date loan5dAgo = daysFromNow(-5); // 5일 전 대출
+            Date loan7dAgo = daysFromNow(-7); // 7일 전 대출
+            Date loan10dAgo = daysFromNow(-10); // 10일 전 대출
+            Date loan14dAgo = daysFromNow(-14); // 14일 전 대출
+            Date loan20dAgo = daysFromNow(-20); // 20일 전 대출 (반납완료용)
 
-            // 반납 기한 (미래)
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 4);   Date dueIn4  = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 10);  Date dueIn10 = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 25);  Date dueIn25 = cal.getTime();
+            // ── 반납기한 - 정상 (미래) ──────────────────────
+            Date due4d = daysFromNow(4); // 4일 후 마감 (곧 만료 예정)
+            Date due7d = daysFromNow(7); // 7일 후 마감
+            Date due10d = daysFromNow(10); // 10일 후 마감
+            Date due14d = daysFromNow(14); // 14일 후 마감 (일반 대출기간)
+            Date due20d = daysFromNow(20); // 20일 후 마감
+            Date due25d = daysFromNow(25); // 25일 후 마감 (교수 장기대출)
 
-            // 반납 기한 (이미 지남 - 연체)
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -3);  Date overdue3  = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -8);  Date overdue8  = cal.getTime();
+            // ── 반납기한 - 연체 테스트용 (이미 지남) ──────────
+            // ⚠️ 아래 날짜들은 의도적으로 과거값 → 연체 시나리오 확인용
+            Date overdue1d = daysFromNow(-1); // 1일 연체
+            Date overdue3d = daysFromNow(-3); // 3일 연체
+            Date overdue5d = daysFromNow(-5); // 5일 연체
+            Date overdue8d = daysFromNow(-8); // 8일 연체
+            Date overdue10d = daysFromNow(-10); // 10일 연체
+            Date overdue14d = daysFromNow(-14); // 14일 연체 (정지 기준 초과)
 
-            // 정지 종료일
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 7);   Date suspEnd = cal.getTime();
+            // ── 반납일 (과거, 반납완료 기록용) ──────────────
+            Date returned5dAgo = daysFromNow(-5);
+            Date returned10dAgo = daysFromNow(-10);
+            Date returned14dAgo = daysFromNow(-14);
 
+            // ── 정지 종료일 ──────────────────────────────────
+            Date suspEnd7d = daysFromNow(7);
 
             // ════════════════════════════════════════════════
             // 회원 5명
             // ════════════════════════════════════════════════
 
-            // ✅ 대출 가능: user123 (한도 3, 현재 대출 1권)
+            // ✅ 대출 가능: user123 (한도 3, 현재 대출 2권)
             Member m1 = new Member();
             m1.setUserId("user123");
             m1.setMaxLoanLimit(3);
@@ -107,16 +122,20 @@ public class DataInitializer {
             m5.setMaxLoanLimit(3);
             m5.setLoanPeriod(14);
             m5.setSuspended(true);
-            m5.setSuspensionEndDate(suspEnd);
+            m5.setSuspensionEndDate(suspEnd7d);
             memberRepository.save(m5);
 
             // account 5개 (로그인 테스트용)
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"),null, "ACTIVE", "STUDENT"));
-            accountRepository.save(new Account("A-002", "hong_gildong", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
-            accountRepository.save(new Account("A-003", "prof_lee", encoder.encode("1234"), null, "ACTIVE", "PROFESSOR"));
-            accountRepository.save(new Account("A-004", "limit_user", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
-            accountRepository.save(new Account("A-005", "suspended_user", encoder.encode("1234"), null, "SUSPENDED", "STUDENT"));
+            accountRepository.save(new Account("A-001", "user123", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-002", "hong_gildong", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-003", "prof_lee", encoder.encode("1234"), null, "ACTIVE", "PROFESSOR"));
+            accountRepository
+                    .save(new Account("A-004", "limit_user", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-005", "suspended_user", encoder.encode("1234"), null, "SUSPENDED", "STUDENT"));
 
             // 사서 및 어드민 계정/회원 등록
             Member mLibrarian = new Member();
@@ -140,10 +159,11 @@ public class DataInitializer {
             mPohang.setSuspended(false);
             memberRepository.save(mPohang);
 
-            accountRepository.save(new Account("A-006", "librarian", encoder.encode("1234"), null, "ACTIVE", "LIBRARIAN"));
+            accountRepository
+                    .save(new Account("A-006", "librarian", encoder.encode("1234"), null, "ACTIVE", "LIBRARIAN"));
             accountRepository.save(new Account("A-007", "admin", encoder.encode("1234"), null, "ACTIVE", "ADMIN"));
-            accountRepository.save(new Account("A-008", "pohang_user", encoder.encode("1234"), null, "ACTIVE", "CITIZEN"));
-
+            accountRepository
+                    .save(new Account("A-008", "pohang_user", encoder.encode("1234"), null, "ACTIVE", "CITIZEN"));
 
             // ════════════════════════════════════════════════
             // 도서 30권 + 사본 (책당 1~3개)
@@ -153,14 +173,14 @@ public class DataInitializer {
 
             // B-001 해리포터 (사본 3개)
             saveBook(bookRepository, "B-001", "해리포터와 마법사의 돌", "J.K. 롤링", "문학수첩", "9788983920677", "소설");
-            saveCopy(bookCopyRepository, "C-001", "B-001", "BC-001", "대출중",   "1F-A01");
+            saveCopy(bookCopyRepository, "C-001", "B-001", "BC-001", "대출중", "1F-A01");
             saveCopy(bookCopyRepository, "C-002", "B-001", "BC-002", "대출중", "1F-A01");
             saveCopy(bookCopyRepository, "C-003", "B-001", "BC-003", "대출가능", "1F-A01");
 
             // B-002 채식주의자 (사본 2개)
             saveBook(bookRepository, "B-002", "채식주의자", "한강", "창비", "9788936433598", "소설");
             saveCopy(bookCopyRepository, "C-004", "B-002", "BC-004", "대출가능", "1F-A02");
-            saveCopy(bookCopyRepository, "C-005", "B-002", "BC-005", "대출중",   "1F-A02");
+            saveCopy(bookCopyRepository, "C-005", "B-002", "BC-005", "대출중", "1F-A02");
 
             // B-003 82년생 김지영 (사본 2개)
             saveBook(bookRepository, "B-003", "82년생 김지영", "조남주", "민음사", "9788937473135", "소설");
@@ -184,19 +204,19 @@ public class DataInitializer {
             // B-007 객체지향 디자인 패턴 (사본 3개)
             saveBook(bookRepository, "B-007", "객체지향 디자인 패턴", "Erich Gamma 외", "프로텍미디어", "9791158390754", "컴퓨터공학");
             saveCopy(bookCopyRepository, "C-011", "B-007", "BC-011", "대출가능", "2F-C01");
-            saveCopy(bookCopyRepository, "C-012", "B-007", "BC-012", "대출중",   "2F-C01");
+            saveCopy(bookCopyRepository, "C-012", "B-007", "BC-012", "대출중", "2F-C01");
             saveCopy(bookCopyRepository, "C-013", "B-007", "BC-013", "대출가능", "2F-C01");
 
             // B-008 Clean Code (사본 2개)
             saveBook(bookRepository, "B-008", "Clean Code", "Robert C. Martin", "인사이트", "9788966260959", "컴퓨터공학");
-            saveCopy(bookCopyRepository, "C-014", "B-008", "BC-014", "대출중",   "2F-C02");
+            saveCopy(bookCopyRepository, "C-014", "B-008", "BC-014", "대출중", "2F-C02");
             saveCopy(bookCopyRepository, "C-015", "B-008", "BC-015", "대출가능", "2F-C02");
 
             // B-009 자바의 정석 (사본 3개)
             saveBook(bookRepository, "B-009", "자바의 정석", "남궁성", "도우출판", "9788994492032", "컴퓨터공학");
             saveCopy(bookCopyRepository, "C-016", "B-009", "BC-016", "대출가능", "2F-C03");
             saveCopy(bookCopyRepository, "C-017", "B-009", "BC-017", "대출가능", "2F-C03");
-            saveCopy(bookCopyRepository, "C-018", "B-009", "BC-018", "대출중",   "2F-C03");
+            saveCopy(bookCopyRepository, "C-018", "B-009", "BC-018", "대출중", "2F-C03");
 
             // B-010 운영체제 (사본 2개)
             saveBook(bookRepository, "B-010", "운영체제", "Abraham Silberschatz", "퍼스트북", "9791185475219", "컴퓨터공학");
@@ -209,7 +229,7 @@ public class DataInitializer {
 
             // B-012 알고리즘 문제 해결 전략 (사본 2개)
             saveBook(bookRepository, "B-012", "알고리즘 문제 해결 전략", "구종만", "인사이트", "9788966260546", "컴퓨터공학");
-            saveCopy(bookCopyRepository, "C-022", "B-012", "BC-022", "대출중",   "2F-C06");
+            saveCopy(bookCopyRepository, "C-022", "B-012", "BC-022", "대출중", "2F-C06");
             saveCopy(bookCopyRepository, "C-023", "B-012", "BC-023", "대출가능", "2F-C06");
 
             // ── 역사 ─────────────────────────────────────────
@@ -217,7 +237,7 @@ public class DataInitializer {
             // B-013 사피엔스 (사본 3개)
             saveBook(bookRepository, "B-013", "사피엔스", "유발 하라리", "김영사", "9788934972464", "역사");
             saveCopy(bookCopyRepository, "C-024", "B-013", "BC-024", "대출가능", "1F-B01");
-            saveCopy(bookCopyRepository, "C-025", "B-013", "BC-025", "대출중",   "1F-B01");
+            saveCopy(bookCopyRepository, "C-025", "B-013", "BC-025", "대출중", "1F-B01");
             saveCopy(bookCopyRepository, "C-026", "B-013", "BC-026", "대출가능", "1F-B01");
 
             // B-014 총균쇠 (사본 2개)
@@ -234,7 +254,7 @@ public class DataInitializer {
             // B-016 이기적 유전자 (사본 2개)
             saveBook(bookRepository, "B-016", "이기적 유전자", "리처드 도킨스", "을유문화사", "9788932473901", "과학");
             saveCopy(bookCopyRepository, "C-030", "B-016", "BC-030", "대출가능", "1F-D01");
-            saveCopy(bookCopyRepository, "C-031", "B-016", "BC-031", "대출중",   "1F-D01");
+            saveCopy(bookCopyRepository, "C-031", "B-016", "BC-031", "대출중", "1F-D01");
 
             // B-017 코스모스 (사본 2개)
             saveBook(bookRepository, "B-017", "코스모스", "칼 세이건", "사이언스북스", "9788983710956", "과학");
@@ -270,13 +290,13 @@ public class DataInitializer {
             // B-023 니체의 말 (사본 2개)
             saveBook(bookRepository, "B-023", "니체의 말", "프리드리히 니체", "삼호미디어", "9788977000476", "철학");
             saveCopy(bookCopyRepository, "C-041", "B-023", "BC-041", "대출가능", "3F-F02");
-            saveCopy(bookCopyRepository, "C-042", "B-023", "BC-042", "대출중",   "3F-F02");
+            saveCopy(bookCopyRepository, "C-042", "B-023", "BC-042", "대출중", "3F-F02");
 
             // B-024 정의란 무엇인가 (사본 3개)
             saveBook(bookRepository, "B-024", "정의란 무엇인가", "마이클 샌델", "김영사", "9788934935346", "철학");
             saveCopy(bookCopyRepository, "C-043", "B-024", "BC-043", "대출가능", "3F-F03");
             saveCopy(bookCopyRepository, "C-044", "B-024", "BC-044", "대출가능", "3F-F03");
-            saveCopy(bookCopyRepository, "C-045", "B-024", "BC-045", "대출중",   "3F-F03");
+            saveCopy(bookCopyRepository, "C-045", "B-024", "BC-045", "대출중", "3F-F03");
 
             // ── 자기계발 ─────────────────────────────────────
 
@@ -309,147 +329,152 @@ public class DataInitializer {
             saveCopy(bookCopyRepository, "C-053", "B-030", "BC-053", "대출가능", "2F-H03");
             saveCopy(bookCopyRepository, "C-054", "B-030", "BC-054", "대출가능", "2F-H03");
 
-                 // ── 학위복 ────────────────────────────────────────
-                 saveBook(bookRepository, "B-031", "학사 학위복 (남성용 M)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-055", "B-031", "BC-055", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-056", "B-031", "BC-056", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-062", "B-031", "BC-062", "대출가능", "학위복 보관실");
+            // ── 학위복 ────────────────────────────────────────
+            saveBook(bookRepository, "B-031", "학사 학위복 (남성용 M)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-055", "B-031", "BC-055", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-056", "B-031", "BC-056", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-062", "B-031", "BC-062", "대출가능", "학위복 보관실");
 
-                 saveBook(bookRepository, "B-032", "학사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-057", "B-032", "BC-057", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-063", "B-032", "BC-063", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-064", "B-032", "BC-064", "대출가능", "학위복 보관실");
+            saveBook(bookRepository, "B-032", "학사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-057", "B-032", "BC-057", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-063", "B-032", "BC-063", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-064", "B-032", "BC-064", "대출가능", "학위복 보관실");
 
-                 saveBook(bookRepository, "B-033", "학사 학위복 (여성용 S)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-058", "B-033", "BC-058", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-065", "B-033", "BC-065", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-066", "B-033", "BC-066", "대출가능", "학위복 보관실");
+            saveBook(bookRepository, "B-033", "학사 학위복 (여성용 S)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-058", "B-033", "BC-058", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-065", "B-033", "BC-065", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-066", "B-033", "BC-066", "대출가능", "학위복 보관실");
 
-                 saveBook(bookRepository, "B-034", "학사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-059", "B-034", "BC-059", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-067", "B-034", "BC-067", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-068", "B-034", "BC-068", "대출가능", "학위복 보관실");
+            saveBook(bookRepository, "B-034", "학사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-059", "B-034", "BC-059", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-067", "B-034", "BC-067", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-068", "B-034", "BC-068", "대출가능", "학위복 보관실");
 
-                 saveBook(bookRepository, "B-035", "석사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-060", "B-035", "BC-060", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-069", "B-035", "BC-069", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-070", "B-035", "BC-070", "대출가능", "학위복 보관실");
+            saveBook(bookRepository, "B-035", "석사 학위복 (남성용 L)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-060", "B-035", "BC-060", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-069", "B-035", "BC-069", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-070", "B-035", "BC-070", "대출가능", "학위복 보관실");
 
-                 saveBook(bookRepository, "B-036", "석사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
-                 saveCopy(bookCopyRepository, "C-061", "B-036", "BC-061", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-071", "B-036", "BC-071", "대출가능", "학위복 보관실");
-                 saveCopy(bookCopyRepository, "C-072", "B-036", "BC-072", "대출가능", "학위복 보관실");
-
+            saveBook(bookRepository, "B-036", "석사 학위복 (여성용 M)", "N/A", "HGU", "N/A", "학위복");
+            saveCopy(bookCopyRepository, "C-061", "B-036", "BC-061", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-071", "B-036", "BC-071", "대출가능", "학위복 보관실");
+            saveCopy(bookCopyRepository, "C-072", "B-036", "BC-072", "대출가능", "학위복 보관실");
 
             // ════════════════════════════════════════════════
             // 대출 기록
             // ════════════════════════════════════════════════
+            //
+            // 대출 상태 요약:
+            // user123 → 대출중 2권 (L-001: 정상, L-013: 정상)
+            // hong_gildong → 반납완료 2건 + 추가 1건
+            // prof_lee → 대출중 2권 (둘 다 정상)
+            // limit_user → 대출중 3권 (한도 초과 → 추가 대출 불가 시나리오)
+            // suspended_user → 반납완료 1건 (정지 상태 유지)
+            //
+            // ⚠️ 연체 테스트 회원(overdue_*)의 dueDate는 의도적으로 과거값
 
-            // user123: 2권 대출중 (해리포터 C-001, 연체 테스트용 C-002)
-            saveLoan(loanRepository, "L-001", "user123", "C-001", tenDaysAgo, dueIn4,  null,      "대출중");
-            saveLoan(loanRepository, "L-013", "user123", "C-002", twentyDaysAgo, overdue3, null, "대출중");
+            // user123: 정상 대출중 2권
+            saveLoan(loanRepository, "L-001", "user123", "C-001", loan10dAgo, due4d, null, "대출중"); // 4일 후 마감
+            saveLoan(loanRepository, "L-013", "user123", "C-002", loan7dAgo, due7d, null, "대출중"); // 7일 후 마감
 
             // hong_gildong: 반납 완료 기록 2개
-            saveLoan(loanRepository, "L-002", "hong_gildong", "C-005", twentyDaysAgo, overdue8, twentyDaysAgo, "반납완료");
-            saveLoan(loanRepository, "L-003", "hong_gildong", "C-014", twentyDaysAgo, overdue8, fiveDaysAgo,   "반납완료");
+            saveLoan(loanRepository, "L-002", "hong_gildong", "C-005", loan20dAgo, returned14dAgo, returned14dAgo,
+                    "반납완료");
+            saveLoan(loanRepository, "L-003", "hong_gildong", "C-014", loan20dAgo, returned10dAgo, returned5dAgo,
+                    "반납완료");
 
-            // prof_lee: 2권 대출중
-            saveLoan(loanRepository, "L-004", "prof_lee", "C-012", fiveDaysAgo,  dueIn25, null, "대출중");
-            saveLoan(loanRepository, "L-005", "prof_lee", "C-031", tenDaysAgo,   dueIn10, null, "대출중");
+            // prof_lee: 정상 대출중 2권
+            saveLoan(loanRepository, "L-004", "prof_lee", "C-012", loan5dAgo, due25d, null, "대출중"); // 25일 후 마감 (교수)
+            saveLoan(loanRepository, "L-005", "prof_lee", "C-031", loan7dAgo, due20d, null, "대출중"); // 20일 후 마감
 
-            // limit_user: 3권 대출중 → 한도 초과 상태
-            saveLoan(loanRepository, "L-006", "limit_user", "C-008", tenDaysAgo,  dueIn4,  null, "대출중");
-            saveLoan(loanRepository, "L-007", "limit_user", "C-018", fiveDaysAgo, dueIn10, null, "대출중");
-            saveLoan(loanRepository, "L-008", "limit_user", "C-022", fiveDaysAgo, dueIn10, null, "대출중");
+            // limit_user: 3권 대출중 → 한도 초과 상태 (dueDate는 정상)
+            saveLoan(loanRepository, "L-006", "limit_user", "C-008", loan10dAgo, due4d, null, "대출중");
+            saveLoan(loanRepository, "L-007", "limit_user", "C-018", loan5dAgo, due10d, null, "대출중");
+            saveLoan(loanRepository, "L-008", "limit_user", "C-022", loan5dAgo, due10d, null, "대출중");
 
-            // suspended_user: 연체로 인해 정지된 기록 (반납완료지만 정지는 유지)
-            saveLoan(loanRepository, "L-009", "suspended_user", "C-037", twentyDaysAgo, overdue3, fiveDaysAgo, "반납완료");
+            // suspended_user: 연체 후 반납완료 (정지는 Member에서 관리)
+            saveLoan(loanRepository, "L-009", "suspended_user", "C-037", loan20dAgo, returned10dAgo, returned5dAgo,
+                    "반납완료");
 
             // 추가 반납완료 기록들
-            saveLoan(loanRepository, "L-010", "user123",     "C-020", twentyDaysAgo, overdue8, tenDaysAgo,   "반납완료");
-            saveLoan(loanRepository, "L-011", "hong_gildong","C-045", twentyDaysAgo, overdue8, twentyDaysAgo,"반납완료");
-            saveLoan(loanRepository, "L-012", "prof_lee",    "C-033", twentyDaysAgo, overdue8, fiveDaysAgo,  "반납완료");
+            saveLoan(loanRepository, "L-010", "user123", "C-020", loan20dAgo, returned10dAgo, returned10dAgo, "반납완료");
+            saveLoan(loanRepository, "L-011", "hong_gildong", "C-045", loan20dAgo, returned14dAgo, returned14dAgo,
+                    "반납완료");
+            saveLoan(loanRepository, "L-012", "prof_lee", "C-033", loan20dAgo, returned5dAgo, returned5dAgo, "반납완료");
 
             // ════════════════════════════════════════════════
-            // 연체 기능 테스트용 추가 Dataset
+            // 연체 기능 테스트용 Dataset
             // ════════════════════════════════════════════════
+            // ⚠️ 아래 회원들은 연체 시나리오 전용 — dueDate가 의도적으로 과거
 
-            // 날짜 헬퍼 추가
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -1);  Date oneDayAgo = cal.getTime();
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -15); Date fifteenDaysAgo = cal.getTime();
+            // ── 연체 테스트 회원 3명 ──────────────────────────
 
-            // 연체 기한 (이미 지남)
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -1);  Date overdue1  = cal.getTime();  // 1일 연체
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -5);  Date overdue5  = cal.getTime();  // 5일 연체
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -10); Date overdue10 = cal.getTime();  // 10일 연체
-            cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, -14); Date overdue14 = cal.getTime();  // 14일 연체
-
-            // ── 연체 테스트 회원 3명 추가 ──
-
-            // overdue_light: 경미한 연체 (1일 - 정지 기준 미달)
+            // overdue_light: 1일 연체 (정지 기준 미달)
             Member mLight = new Member();
             mLight.setUserId("overdue_light");
             mLight.setMaxLoanLimit(3);
             mLight.setLoanPeriod(14);
             mLight.setSuspended(false);
             memberRepository.save(mLight);
-            accountRepository.save(new Account("A-009", "overdue_light", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-009", "overdue_light", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
 
-            // overdue_mid: 중간 연체 (5일 - 정지 기준 미달)
+            // overdue_mid: 5일 연체 (정지 기준 미달)
             Member mMid = new Member();
             mMid.setUserId("overdue_mid");
             mMid.setMaxLoanLimit(3);
             mMid.setLoanPeriod(14);
             mMid.setSuspended(false);
             memberRepository.save(mMid);
-            accountRepository.save(new Account("A-010", "overdue_mid", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-010", "overdue_mid", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
 
-            // overdue_heavy: 심각한 연체 (14일 - 정지 기준 초과)
+            // overdue_heavy: 14일 연체 (정지 기준 초과)
             Member mHeavy = new Member();
             mHeavy.setUserId("overdue_heavy");
             mHeavy.setMaxLoanLimit(3);
             mHeavy.setLoanPeriod(14);
             mHeavy.setSuspended(false);
             memberRepository.save(mHeavy);
-            accountRepository.save(new Account("A-011", "overdue_heavy", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
+            accountRepository
+                    .save(new Account("A-011", "overdue_heavy", encoder.encode("1234"), null, "ACTIVE", "STUDENT"));
 
-            // ── 연체 테스트용 대출 기록 ──
+            // ── 연체 테스트 사본 및 대출 기록 ────────────────────
 
-            // overdue_light: 1일 연체 중 (C-009 → 아몬드 C-009 사용불가, 소설 B-005의 C-009)
-            // 새 사본이 없으므로 현재 대출가능한 사본 사용
+            // overdue_light: 1일 연체중 (B-005 추가 사본)
             saveCopy(bookCopyRepository, "C-073", "B-005", "BC-073", "대출중", "1F-A05");
-            saveLoan(loanRepository, "L-014", "overdue_light", "C-073", fifteenDaysAgo, overdue1, null, "대출중");
+            saveLoan(loanRepository, "L-014", "overdue_light", "C-073", loan14dAgo, overdue1d, null, "대출중");
+            // ↑ 대출일: -14일, 반납기한: -1일 → 1일 연체
 
-            // overdue_mid: 5일 연체 중
+            // overdue_mid: 5일 연체중 (B-007 추가 사본)
             saveCopy(bookCopyRepository, "C-074", "B-007", "BC-074", "대출중", "2F-C01");
-            saveLoan(loanRepository, "L-015", "overdue_mid", "C-074", fifteenDaysAgo, overdue5, null, "대출중");
+            saveLoan(loanRepository, "L-015", "overdue_mid", "C-074", loan14dAgo, overdue5d, null, "대출중");
+            // ↑ 대출일: -14일, 반납기한: -5일 → 5일 연체
 
-            // overdue_heavy: 10일 연체 중 (1권)
+            // overdue_heavy: 10일 연체중 (B-013 추가 사본)
             saveCopy(bookCopyRepository, "C-075", "B-013", "BC-075", "대출중", "1F-B01");
-            saveLoan(loanRepository, "L-016", "overdue_heavy", "C-075", fifteenDaysAgo, overdue10, null, "대출중");
+            saveLoan(loanRepository, "L-016", "overdue_heavy", "C-075", loan14dAgo, overdue10d, null, "대출중");
+            // ↑ 대출일: -14일, 반납기한: -10일 → 10일 연체
 
-            // overdue_heavy: 14일 연체 중 (2권 - penaltyApplied 테스트용)
+            // overdue_heavy: 14일 연체중 (B-024 추가 사본) - penaltyApplied 테스트
             saveCopy(bookCopyRepository, "C-076", "B-024", "BC-076", "대출중", "3F-F03");
-            saveLoan(loanRepository, "L-017", "overdue_heavy", "C-076", fifteenDaysAgo, overdue14, null, "대출중");
+            saveLoan(loanRepository, "L-017", "overdue_heavy", "C-076", loan14dAgo, overdue14d, null, "대출중");
+            // ↑ 대출일: -14일, 반납기한: -14일 → 14일 연체
 
-            // hong_gildong: 8일 연체 중 (정지 기준 초과 - applySuspension 테스트용)
+            // hong_gildong: 8일 연체중 (B-008 추가 사본) - applySuspension 테스트
             saveCopy(bookCopyRepository, "C-077", "B-008", "BC-077", "대출중", "2F-C02");
-            saveLoan(loanRepository, "L-018", "hong_gildong", "C-077", fifteenDaysAgo, overdue8, null, "대출중");
-
+            saveLoan(loanRepository, "L-018", "hong_gildong", "C-077", loan14dAgo, overdue8d, null, "대출중");
+            // ↑ 대출일: -14일, 반납기한: -8일 → 8일 연체
 
         };
     }
 
-    // ── 헬퍼 메서드 ─────────────────────────────────────────────────
+    // ════════════════════════════════════════════════
+    // 헬퍼 메서드
+    // ════════════════════════════════════════════════
 
     private void saveBook(BookRepository repo, String id, String title, String author,
-                          String publisher, String isbn, String category) {
+            String publisher, String isbn, String category) {
         Book b = new Book();
         b.setBookId(id);
         b.setTitle(title);
@@ -461,7 +486,7 @@ public class DataInitializer {
     }
 
     private void saveCopy(BookCopyRepository repo, String copyId, String bookId,
-                          String barcode, String status, String location) {
+            String barcode, String status, String location) {
         BookCopy c = new BookCopy();
         c.setCopyId(copyId);
         c.setBookId(bookId);
@@ -472,7 +497,7 @@ public class DataInitializer {
     }
 
     private void saveLoan(LoanRepository repo, String loanId, String userId, String copyId,
-                          Date loanDate, Date dueDate, Date returnDate, String status) {
+            Date loanDate, Date dueDate, Date returnDate, String status) {
         Loan l = new Loan();
         l.setLoanId(loanId);
         l.setUserId(userId);
