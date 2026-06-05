@@ -4,6 +4,7 @@ import com.back.library.domain.student.command.AddStudentCommand;
 import com.back.library.domain.student.command.DeleteStudentCommand;
 import com.back.library.domain.student.command.ModifyStudentCommand;
 import com.back.library.domain.student.command.StudentCommand;
+import com.back.library.domain.student.command.SyncStudentDataCommand;
 import com.back.library.domain.student.command.ViewStudentCommand;
 import com.back.library.domain.student.command.ViewStudentsCommand;
 import com.back.library.domain.student.dto.request.StudentRequest;
@@ -65,6 +66,13 @@ public class StudentController {
     @ResponseBody
     public StudentCommandResponse viewStudents() {
         StudentCommand command = new ViewStudentsCommand(studentService);
+        return command.execute();
+    }
+
+    @PostMapping("/syncStudentData")
+    @ResponseBody
+    public StudentCommandResponse syncStudentData() {
+        StudentCommand command = new SyncStudentDataCommand(studentService);
         return command.execute();
     }
 }

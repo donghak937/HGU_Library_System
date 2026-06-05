@@ -4,6 +4,8 @@ import com.back.library.domain.student.dto.request.StudentRequest;
 import com.back.library.domain.student.dto.response.StudentResponse;
 import com.back.library.domain.student.entity.Student;
 import com.back.library.domain.student.repository.StudentRepository;
+import com.back.library.domain.student.school.SchoolStudentRecord;
+import com.back.library.domain.student.school.SchoolSystemClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.util.List;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final SchoolSystemClient schoolSystemClient;
 
     @Transactional
     public Student addStudent(StudentRequest request) {
@@ -71,6 +74,30 @@ public class StudentService {
         return studentRepository.findAll().stream()
                 .map(StudentResponse::new)
                 .toList();
+    }
+
+    @Transactional
+    public List<StudentResponse> syncStudentData() {
+        List<Student> syncedStudents = schoolSystemClient.fetchStudentData().stream()
+                .map(this::upsertSchoolStudent)
+                .toList();
+
+        return syncedStudents.stream()
+                .map(StudentResponse::new)
+                .toList();
+    }
+
+    private Student upsertSchoolStudent(SchoolStudentRecord record) {
+        Student student = studentRepository.findById(record.getStudentId())
+                .orElseGet(Student::new);
+
+        student.setStudentId(record.getStudentId());
+        student.setName(record.getName());
+        student.setDepartment(record.getDepartment());
+        student.setEmail(record.getEmail());
+        student.setPhoneNumber(record.getPhoneNumber());
+
+        return studentRepository.save(student);
     }
 
     private void validateRequired(StudentRequest request) {

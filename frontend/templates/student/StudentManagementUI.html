@@ -261,6 +261,7 @@
             <input id="search-student-id" placeholder="학번으로 조회">
             <button onclick="viewStudent()">조회</button>
             <button class="success" onclick="loadStudents()">전체 목록</button>
+            <button class="success" onclick="syncStudentData()">학교 시스템 동기화</button>
         </div>
 
         <div class="table-wrap">
@@ -395,6 +396,19 @@
 
     async function loadStudents() {
         const response = await fetch("/student/viewStudents", {
+            headers: authHeaders()
+        });
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            renderStudents(data.data);
+        }
+    }
+
+    async function syncStudentData() {
+        const response = await fetch("/student/syncStudentData", {
+            method: "POST",
             headers: authHeaders()
         });
         const data = await response.json();
