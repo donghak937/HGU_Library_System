@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>HGU 학생 관리</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --surface: #ffffff;
+            --line: #dfe5ec;
+            --text: #1f2a37;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger: #dc2626;
+            --success: #15803d;
+            --neutral: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        header {
+            min-height: 64px;
+            padding: 12px 32px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            white-space: nowrap;
+        }
+
+        main {
+            max-width: 1180px;
+            margin: 28px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 360px minmax(0, 1fr);
+            gap: 20px;
+        }
+
+        section {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        h2 {
+            margin: 0 0 16px;
+            font-size: 18px;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        input, select {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 0;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .header-actions {
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .search-row {
+            align-items: stretch;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        button {
+            min-height: 40px;
+            padding: 0 14px;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #fff;
+            background: var(--primary);
+            white-space: nowrap;
+            line-height: 1.1;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        button.secondary {
+            background: var(--neutral);
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button.success {
+            background: var(--success);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 18px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            color: var(--muted);
+            background: #f8fafc;
+            font-size: 13px;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .table-actions button {
+            min-height: 32px;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+
+        #message {
+            min-height: 22px;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        #user-info {
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 900px) {
+            header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+                width: 100%;
+            }
+
+            .search-row {
+                flex-wrap: wrap;
+            }
+
+            .search-row input {
+                flex-basis: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>학생 관리</h1>
+    <div class="row header-actions">
+        <span id="user-info"></span>
+        <button class="secondary" onclick="location.href='/book/admin/BookManagementUI'">도서 관리</button>
+        <button class="secondary" onclick="location.href='/book/SearchBookUI'">도서 검색</button>
+        <button class="danger" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<main>
+    <section>
+        <h2 id="form-title">학생 추가</h2>
+        <form id="student-form" onsubmit="submitStudent(event)">
+            <input type="hidden" id="edit-student-id">
+
+            <label for="student-id">학번</label>
+            <input id="student-id" required placeholder="S-2024001">
+
+            <label for="student-name">이름</label>
+            <input id="student-name" required placeholder="홍길동">
+
+            <label for="department">학부</label>
+            <input id="department" required placeholder="전산전자공학부">
+
+            <label for="email">이메일</label>
+            <input id="email" type="email" placeholder="student@handong.ac.kr">
+
+            <label for="phone-number">전화번호</label>
+            <input id="phone-number" placeholder="010-0000-0000">
+
+            <div class="actions">
+                <button type="submit" id="submit-button">추가</button>
+                <button type="button" class="secondary" onclick="resetForm()">초기화</button>
+            </div>
+        </form>
+        <p id="message"></p>
+    </section>
+
+    <section>
+        <h2>학생 조회</h2>
+        <div class="row search-row">
+            <input id="search-student-id" placeholder="학번으로 조회">
+            <button onclick="viewStudent()">조회</button>
+            <button class="success" onclick="loadStudents()">전체 목록</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>학번</th>
+                    <th>이름</th>
+                    <th>학부</th>
+                    <th>이메일</th>
+                    <th>전화번호</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="student-table-body">
+                <tr>
+                    <td colspan="6" style="text-align:center; color:var(--muted);">학생 목록을 불러오는 중입니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    const token = localStorage.getItem("accessToken");
+
+    function parseJwt(jwt) {
+        const base64Url = jwt.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const payload = decodeURIComponent(atob(base64).split("").map(c => {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(""));
+        return JSON.parse(payload);
+    }
+
+    function requireAdmin() {
+        if (!token) {
+            alert("관리자 로그인이 필요합니다.");
+            location.replace("/account/loginUI");
+            return;
+        }
+
+        try {
+            const payload = parseJwt(token);
+            if (payload.role !== "ADMIN") {
+                alert("학생 관리는 ADMIN만 접근할 수 있습니다.");
+                location.replace("/book/SearchBookUI");
+                return;
+            }
+            document.getElementById("user-info").textContent = payload.username + " (" + payload.role + ")";
+        } catch (e) {
+            alert("유효하지 않은 토큰입니다. 다시 로그인해주세요.");
+            location.replace("/account/loginUI");
+        }
+    }
+
+    function authHeaders() {
+        return {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+        };
+    }
+
+    function showMessage(message) {
+        document.getElementById("message").textContent = message;
+    }
+
+    function collectForm() {
+        return {
+            studentId: document.getElementById("student-id").value.trim(),
+            name: document.getElementById("student-name").value.trim(),
+            department: document.getElementById("department").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phoneNumber: document.getElementById("phone-number").value.trim()
+        };
+    }
+
+    async function submitStudent(event) {
+        event.preventDefault();
+
+        const editId = document.getElementById("edit-student-id").value;
+        const body = collectForm();
+        const url = editId ? `/student/modifyStudent/${encodeURIComponent(editId)}` : "/student/addStudent";
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            await loadStudents();
+            resetForm();
+        }
+    }
+
+    async function viewStudent() {
+        const studentId = document.getElementById("search-student-id").value.trim();
+        if (!studentId) {
+            showMessage("조회할 학번을 입력하세요.");
+            return;
+        }
+
+        const response = await fetch(`/student/viewStudent?studentId=${encodeURIComponent(studentId)}`, {
+            headers: authHeaders()
+        });
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            renderStudents([data.data]);
+        }
+    }
+
+    async function deleteStudent(studentId) {
+        if (!confirm(studentId + " 학생을 삭제할까요?")) return;
+
+        const response = await fetch(`/student/deleteStudent?studentId=${encodeURIComponent(studentId)}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            await loadStudents();
+        }
+    }
+
+    async function loadStudents() {
+        const response = await fetch("/student/viewStudents", {
+            headers: authHeaders()
+        });
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            renderStudents(data.data);
+        }
+    }
+
+    function editStudent(studentId) {
+        const row = document.querySelector(`[data-student-row="${studentId}"]`);
+        if (!row) return;
+
+        document.getElementById("edit-student-id").value = studentId;
+        document.getElementById("student-id").value = studentId;
+        document.getElementById("student-id").disabled = true;
+        document.getElementById("student-name").value = row.dataset.name;
+        document.getElementById("department").value = row.dataset.department;
+        document.getElementById("email").value = row.dataset.email;
+        document.getElementById("phone-number").value = row.dataset.phone;
+        document.getElementById("form-title").textContent = "학생 정보 수정";
+        document.getElementById("submit-button").textContent = "수정";
+    }
+
+    function resetForm() {
+        document.getElementById("student-form").reset();
+        document.getElementById("edit-student-id").value = "";
+        document.getElementById("student-id").disabled = false;
+        document.getElementById("form-title").textContent = "학생 추가";
+        document.getElementById("submit-button").textContent = "추가";
+    }
+
+    function renderStudents(students) {
+        const tbody = document.getElementById("student-table-body");
+        tbody.innerHTML = "";
+
+        if (!students || students.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">표시할 학생이 없습니다.</td></tr>`;
+            return;
+        }
+
+        students.forEach(student => {
+            const tr = document.createElement("tr");
+            tr.dataset.studentRow = student.studentId;
+            tr.dataset.name = student.name || "";
+            tr.dataset.department = student.department || "";
+            tr.dataset.email = student.email || "";
+            tr.dataset.phone = student.phoneNumber || "";
+            tr.innerHTML = `
+                <td><strong>${student.studentId}</strong></td>
+                <td>${student.name || ""}</td>
+                <td>${student.department || ""}</td>
+                <td>${student.email || ""}</td>
+                <td>${student.phoneNumber || ""}</td>
+                <td>
+                    <div class="table-actions">
+                        <button onclick="editStudent('${student.studentId}')">수정</button>
+                        <button class="danger" onclick="deleteStudent('${student.studentId}')">삭제</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem("accessToken");
+        location.replace("/account/loginUI");
+    }
+
+    requireAdmin();
+    loadStudents();
+</script>
+</body>
+</html>

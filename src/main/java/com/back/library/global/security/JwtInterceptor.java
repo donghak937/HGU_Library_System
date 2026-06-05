@@ -49,6 +49,18 @@ public class JwtInterceptor implements HandlerInterceptor {
             }
         }
 
+        if (requestURI.startsWith("/student/")) {
+            String role = jwtUtil.getRole(token);
+            if (!"ADMIN".equals(role)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json; charset=UTF-8");
+                response.getWriter().write(
+                        "{\"success\": false, \"message\": \"학생 관리는 관리자만 접근할 수 있습니다.\"}"
+                );
+                return false;
+            }
+        }
+
         return true;
     }
 }

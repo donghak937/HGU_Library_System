@@ -21,7 +21,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns(
                         "/book/**",
                         "/loan/**",
-                        "/overdue/**"
+                        "/overdue/**",
+                        "/student/**"
                 )
                 //여기 경로에 적힌  주소들은 인터셉터에 잡히지 않음
                 .excludePathPatterns(
@@ -31,6 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
 
                         "/book/SearchBookUI",
                         "/book/admin/BookManagementUI",
+                        "/student/StudentManagementUI",
 
                         "/book/searchBooks",
                         "/book/searchGowns",
