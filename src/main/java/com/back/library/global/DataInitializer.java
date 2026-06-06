@@ -4,7 +4,9 @@ import com.back.library.domain.user.entity.Account;
 import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.Loan;
+import com.back.library.domain.student.entity.Student;
 
+import com.back.library.domain.student.repository.StudentRepository;
 import com.back.library.domain.user.repository.AccountRepository;
 import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.BookCopyRepository;
@@ -40,7 +42,8 @@ public class DataInitializer {
             BookCopyRepository bookCopyRepository,
             LoanRepository loanRepository,
             BookRepository bookRepository,
-            AccountRepository accountRepository) {
+            AccountRepository accountRepository,
+            StudentRepository studentRepository) {
         return args -> {
 
             // ════════════════════════════════════════════════
@@ -164,6 +167,15 @@ public class DataInitializer {
             accountRepository.save(new Account("A-007", "admin", encoder.encode("1234"), null, "ACTIVE", "ADMIN"));
             accountRepository
                     .save(new Account("A-008", "pohang_user", encoder.encode("1234"), null, "ACTIVE", "CITIZEN"));
+
+            saveStudent(studentRepository, "S-2024001", "user123", "Computer Science", "user123@handong.ac.kr",
+                    "010-1000-1001");
+            saveStudent(studentRepository, "S-2024002", "hong_gildong", "Management and Economics",
+                    "hong@handong.ac.kr", "010-1000-1002");
+            saveStudent(studentRepository, "S-2024003", "limit_user", "Computer Science",
+                    "limit@handong.ac.kr", "010-1000-1003");
+            saveStudent(studentRepository, "S-2024004", "suspended_user", "Counseling Psychology",
+                    "suspended@handong.ac.kr", "010-1000-1004");
 
             // ════════════════════════════════════════════════
             // 도서 30권 + 사본 (책당 1~3개)
@@ -507,5 +519,11 @@ public class DataInitializer {
         l.setReturnDate(returnDate);
         l.setStatus(status);
         repo.save(l);
+    }
+
+    private void saveStudent(StudentRepository repo, String studentId, String name, String department,
+            String email, String phoneNumber) {
+        Student student = new Student(studentId, name, department, email, phoneNumber);
+        repo.save(student);
     }
 }

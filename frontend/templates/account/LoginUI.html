@@ -230,6 +230,12 @@
                 document.querySelector(".container").style.display = "none";
 
                 document.getElementById("afterLogin").style.display = "block";
+                const mainButton = document.querySelector(".main-btn");
+                if (payload.role === "ADMIN") {
+                    mainButton.innerText = "Student Management";
+                } else {
+                    mainButton.innerText = "Library System";
+                }
                 
                 document.getElementById("welcome").innerText =
                     payload.username + "님 환영합니다!";
@@ -277,7 +283,12 @@
             return;
         }
 
-        fetch("/book/SearchBookUI", {
+        const payload = parseJwt(token);
+        const targetUrl = payload.role === "ADMIN"
+            ? "/student/StudentManagementUI"
+            : "/book/SearchBookUI";
+
+        fetch(targetUrl, {
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + token
@@ -296,7 +307,7 @@
                 return;
             }
 
-            window.location.href = "/book/SearchBookUI";
+            window.location.href = targetUrl;
         })
         .catch(() => {
 
