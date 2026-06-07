@@ -117,15 +117,17 @@ public class BookRequestService {
         book.setCategory(finalCategory);
         bookRepository.save(book);
 
+        BookCopy prototype = new BookCopy();
+        prototype.setBookId(bookId);
+        prototype.setStatus("대출가능");
+        prototype.setLocation("신착도서 코너");
+
         // ── BookCopy 생성 (copyCount 수만큼) ──────────────────
         for (int i = 1; i <= finalCount; i++) {
             String copyId = generateCopyId(bookId, i);
-            BookCopy copy = new BookCopy();
+            BookCopy copy = prototype.copy();
             copy.setCopyId(copyId);
-            copy.setBookId(bookId);
             copy.setBarcode("REQ-" + copyId);
-            copy.setStatus("대출가능");
-            copy.setLocation("신착도서 코너");
             bookCopyRepository.save(copy);
         }
 
