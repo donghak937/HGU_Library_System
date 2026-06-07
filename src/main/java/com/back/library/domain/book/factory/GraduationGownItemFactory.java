@@ -24,12 +24,14 @@ public class GraduationGownItemFactory implements LibraryItemFactory {
 
     @Override
     public BookCopy createCopy(String bookId, String copyId, int sequence) {
-        BookCopy copy = new BookCopy();
+        BookCopy prototype = new BookCopy();
+        prototype.setBookId(bookId);
+        prototype.setStatus("대출가능");
+        prototype.setLocation("학위복 보관실");
+
+        BookCopy copy = prototype.copy();
         copy.setCopyId(copyId);
-        copy.setBookId(bookId);
         copy.setBarcode("GOWN-" + copyId);
-        copy.setStatus("대출가능");
-        copy.setLocation("학위복 보관실");
         return copy;
     }
 }

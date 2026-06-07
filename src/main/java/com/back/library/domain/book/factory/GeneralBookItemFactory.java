@@ -22,12 +22,14 @@ public class GeneralBookItemFactory implements LibraryItemFactory {
 
     @Override
     public BookCopy createCopy(String bookId, String copyId, int sequence) {
-        BookCopy copy = new BookCopy();
+        BookCopy prototype = new BookCopy();
+        prototype.setBookId(bookId);
+        prototype.setStatus("대출가능");
+        prototype.setLocation("신착도서 코너");
+
+        BookCopy copy = prototype.copy();
         copy.setCopyId(copyId);
-        copy.setBookId(bookId);
         copy.setBarcode("REQ-" + copyId);
-        copy.setStatus("대출가능");
-        copy.setLocation("신착도서 코너");
         return copy;
     }
 }
