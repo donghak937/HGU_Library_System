@@ -26,6 +26,8 @@
             background: var(--bg);
             color: var(--text);
             font-family: "Segoe UI", Arial, sans-serif;
+            min-height: 100vh;
+            overflow-y: auto;
         }
 
         header {
@@ -52,6 +54,7 @@
             display: grid;
             grid-template-columns: 360px minmax(0, 1fr);
             gap: 20px;
+            align-items: start;
         }
 
         section {
@@ -99,6 +102,11 @@
 
         .search-row {
             align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .search-row input {
+            flex: 1 1 220px;
         }
 
         .actions {
@@ -138,7 +146,8 @@
         }
 
         .table-wrap {
-            overflow-x: auto;
+            max-height: calc(100vh - 230px);
+            overflow: auto;
             margin-top: 18px;
         }
 
@@ -220,8 +229,6 @@
     <h1>학생 관리</h1>
     <div class="row header-actions">
         <span id="user-info"></span>
-        <button class="secondary" onclick="location.href='/book/admin/BookManagementUI'">도서 관리</button>
-        <button class="secondary" onclick="location.href='/book/SearchBookUI'">도서 검색</button>
         <button class="danger" onclick="logout()">로그아웃</button>
     </div>
 </header>
