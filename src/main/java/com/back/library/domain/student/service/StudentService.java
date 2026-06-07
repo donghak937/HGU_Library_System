@@ -1,5 +1,6 @@
 package com.back.library.domain.student.service;
 
+import com.back.library.domain.student.adapter.SchoolStudentRecordAdapter;
 import com.back.library.domain.student.dto.request.StudentRequest;
 import com.back.library.domain.student.dto.response.StudentResponse;
 import com.back.library.domain.student.entity.Student;
@@ -19,6 +20,7 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final SchoolSystemClient schoolSystemClient;
+    private final SchoolStudentRecordAdapter schoolStudentRecordAdapter;
 
     @Transactional
     public Student addStudent(StudentRequest request) {
@@ -88,14 +90,15 @@ public class StudentService {
     }
 
     private Student upsertSchoolStudent(SchoolStudentRecord record) {
+        Student adaptedStudent = schoolStudentRecordAdapter.toStudent(record);
         Student student = studentRepository.findById(record.getStudentId())
                 .orElseGet(Student::new);
 
-        student.setStudentId(record.getStudentId());
-        student.setName(record.getName());
-        student.setDepartment(record.getDepartment());
-        student.setEmail(record.getEmail());
-        student.setPhoneNumber(record.getPhoneNumber());
+        student.setStudentId(adaptedStudent.getStudentId());
+        student.setName(adaptedStudent.getName());
+        student.setDepartment(adaptedStudent.getDepartment());
+        student.setEmail(adaptedStudent.getEmail());
+        student.setPhoneNumber(adaptedStudent.getPhoneNumber());
 
         return studentRepository.save(student);
     }
