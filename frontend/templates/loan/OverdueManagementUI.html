@@ -224,6 +224,7 @@
             <a href="/book/SearchBookUI" class="menu-item">📘 도서 검색</a>
             <a href="/book/SearchBookUI?tab=gown" class="menu-item">🎓 학위복 대여</a>
             <a href="/loan/ReturnBookUI" class="menu-item">👤 내 서재 (대출/반납)</a>
+            <a href="/book/requestBook/RequestBookUI" id="sidebar-request-link" class="menu-item" style="display: none;">📚 도서 구입 요청</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
             <a href="#" class="menu-item active">📋 연체 관리</a>
         </nav>
@@ -285,7 +286,14 @@
     const userDisplay = document.getElementById("user-display");
     if (userDisplay) userDisplay.textContent = "👤 " + payload.username + " (" + payload.role + ")";
 
-    if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+    // 도서 구입 요청 메뉴 (PROFESSOR, FACULTY_GRADUATE, LIBRARIAN, ADMIN)
+    if (payload.role === "PROFESSOR" || payload.role === "FACULTY_GRADUATE" ||
+        payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+        const requestLink = document.getElementById("sidebar-request-link");
+        if (requestLink) requestLink.style.display = "flex";
+    }
+
+        if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
         const adminLink = document.getElementById("sidebar-admin-link");
         if (adminLink) adminLink.style.display = "flex";
     }

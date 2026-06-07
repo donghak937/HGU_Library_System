@@ -273,6 +273,7 @@
             <a href="#" class="menu-item active" onclick="switchMainTab('book')">📘 도서 검색</a>
             <a href="#" class="menu-item" onclick="switchMainTab('gown')">🎓 학위복 대여</a>
             <a href="/loan/ReturnBookUI" class="menu-item">👤 내 서재 (대출/반납)</a>
+            <a href="/book/requestBook/RequestBookUI" id="sidebar-request-link" class="menu-item" style="display: none;">📚 도서 구입 요청</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
             <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
         </nav>
@@ -291,7 +292,7 @@
             <div class="content-card">
                 <h2>🔍 도서 검색</h2>
                 <p class="content-desc">원하는 책의 제목, 저자 또는 카테고리를 활용하여 검색해 보세요.</p>
-                
+
                 <div class="search-box-row">
                     <div class="form-group">
                         <label for="keyword">키워드로 검색 (제목 또는 저자)</label>
@@ -301,7 +302,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="search-box-row" style="margin-top: 24px;">
                     <div class="form-group">
                         <label for="category">카테고리로 검색</label>
@@ -396,7 +397,14 @@
             userDisplay.textContent = "👤 " + CURRENT_MEMBER_ID + " (" + payload.role + ")";
         }
 
-        if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+        // 도서 구입 요청 메뉴 (PROFESSOR, FACULTY_GRADUATE, LIBRARIAN, ADMIN)
+        if (payload.role === "PROFESSOR" || payload.role === "FACULTY_GRADUATE" ||
+            payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+            const requestLink = document.getElementById("sidebar-request-link");
+            if (requestLink) requestLink.style.display = "flex";
+        }
+
+                if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
             const adminLink = document.getElementById("sidebar-admin-link");
             if (adminLink) {
                 adminLink.style.display = "flex";
