@@ -29,7 +29,11 @@ public class WebConfig implements WebMvcConfigurer {
                         "/account/refresh",
 
                         "/student/StudentManagementUI",
+                        "/book/SearchBookUI",
+                        "/book/admin/BookManagementUI",
                         "/book/requestBook/RequestBookUI",  // UI 페이지는 인증 불필요
+                        "/loan/ReturnBookUI",
+                        "/overdue/OverdueManagementUI",
 
                         "/js/**",
                         "/css/**",
