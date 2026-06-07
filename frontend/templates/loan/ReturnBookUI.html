@@ -196,6 +196,7 @@
             <a href="/book/SearchBookUI" class="menu-item">📘 도서 검색</a>
             <a href="/book/SearchBookUI?tab=gown" class="menu-item">🎓 학위복 대여</a>
             <a href="#" class="menu-item active">👤 내 서재 (대출/반납)</a>
+            <a href="/book/requestBook/RequestBookUI" id="sidebar-request-link" class="menu-item" style="display: none;">📚 도서 구입 요청</a>
             <a href="/book/admin/BookManagementUI" id="sidebar-admin-link" class="menu-item" style="display: none;">⚙️ 도서 관리</a>
             <a href="/overdue/OverdueManagementUI" id="sidebar-overdue-link" class="menu-item" style="display: none;">📋 연체 관리</a>
         </nav>
@@ -209,17 +210,6 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-        <!-- Member Status Card -->
-        <div class="content-card" id="member-status-card" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border-left: 5px solid #3b82f6; padding: 20px 30px; margin-bottom: 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                <div>
-                    <h2 style="margin: 0 0 5px 0; color: #1e293b; font-size: 1.25rem; font-weight: 700;">👤 내 회원 상태</h2>
-                    <p style="margin: 0; color: #64748b; font-size: 0.9rem;" id="member-status-details">상태 정보를 불러오는 중...</p>
-                </div>
-                <div id="member-status-badge"></div>
-            </div>
-        </div>
-
         <!-- Book Loans Card -->
         <div class="content-card" id="book-loans-card">
             <h2>📚 일반 도서 대출 내역</h2>
@@ -274,6 +264,13 @@
         userDisplay.textContent = "👤 " + CURRENT_MEMBER_ID + " (" + payload.role + ")";
     }
 
+    // 도서 구입 요청 메뉴 (PROFESSOR, FACULTY_GRADUATE, LIBRARIAN, ADMIN)
+    if (payload.role === "PROFESSOR" || payload.role === "FACULTY_GRADUATE" ||
+        payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
+        const requestLink = document.getElementById("sidebar-request-link");
+        if (requestLink) requestLink.style.display = "flex";
+    }
+
     if (payload.role === "LIBRARIAN" || payload.role === "ADMIN") {
         const adminLink = document.getElementById("sidebar-admin-link");
         if (adminLink) adminLink.style.display = "flex";
@@ -281,53 +278,10 @@
         if (overdueLink) overdueLink.style.display = "flex";
     }
 
-    // 시티즌(지역 주민)은 학위복 대여 내역 및 예약 목록을 숨김
-    if (payload.role === "CITIZEN") {
-        const gownLoansCard = document.getElementById("gown-loans-card");
-        if (gownLoansCard) gownLoansCard.style.display = "none";
-        const gownReservationsCard = document.getElementById("gown-reservations-card");
-        if (gownReservationsCard) gownReservationsCard.style.display = "none";
-    }
-
     window.onload = function() {
         fetchMyLoans();
         fetchMyReservations();
-        fetchMemberStatus();
     };
-
-    function fetchMemberStatus() {
-        fetch(`/account/memberStatus?userId=${encodeURIComponent(CURRENT_MEMBER_ID)}`, {
-            headers: authHeader()
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const detailsText = `최대 대출 가능 한도: <strong>${data.maxLoanLimit}</strong>${payload.role === 'CITIZEN' ? '권' : '권/벌'} | 기본 대출 기간: <strong>${data.loanPeriod}</strong>일`;
-                document.getElementById("member-status-details").innerHTML = detailsText;
-                
-                const badgeContainer = document.getElementById("member-status-badge");
-                if (data.suspended) {
-                    const endDateStr = formatDate(data.suspensionEndDate);
-                    badgeContainer.innerHTML = `
-                        <div style="background-color: #fee2e2; color: #991b1b; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; border: 1px solid #fecaca; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-flex; align-items: center; gap: 6px;">
-                            🚨 대출 정지 중 (~ ${endDateStr} 까지)
-                        </div>
-                    `;
-                } else {
-                    badgeContainer.innerHTML = `
-                        <div style="background-color: #dcfce7; color: #166534; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; border: 1px solid #bbf7d0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-flex; align-items: center; gap: 6px;">
-                            ✅ 정상 대출 가능
-                        </div>
-                    `;
-                }
-            } else {
-                document.getElementById("member-status-details").innerHTML = "상태 정보를 조회할 수 없습니다.";
-            }
-        })
-        .catch(() => {
-            document.getElementById("member-status-details").innerHTML = "상태 정보 조회 실패";
-        });
-    }
 
     function formatDate(dateString) {
         if (!dateString) return '';
