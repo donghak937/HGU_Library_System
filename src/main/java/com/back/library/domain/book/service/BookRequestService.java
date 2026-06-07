@@ -3,6 +3,8 @@ package com.back.library.domain.book.service;
 import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.BookRequest;
+import com.back.library.domain.book.factory.LibraryItemFactory;
+import com.back.library.domain.book.factory.LibraryItemFactoryProvider;
 import com.back.library.domain.book.repository.BookCopyRepository;
 import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.BookRequestRepository;
@@ -32,6 +34,7 @@ public class BookRequestService {
     private final BookRequestRepository bookRequestRepository;
     private final BookRepository        bookRepository;
     private final BookCopyRepository    bookCopyRepository;
+    private final LibraryItemFactoryProvider libraryItemFactoryProvider;
 
     // ── requestBook — 도서 구입 요청 ─────────────────────────
     @Transactional
@@ -106,28 +109,17 @@ public class BookRequestService {
                 ? category : req.getCategory();
         int    finalCount    = copyCount > 0 ? copyCount : req.getCopyCount();
 
+        LibraryItemFactory factory = libraryItemFactoryProvider.getFactory(finalCategory);
+
         // ── Book 생성 ──────────────────────────────────────────
         String bookId = generateBookId();
-        Book book = new Book();
-        book.setBookId(bookId);
-        book.setTitle(req.getTitle());
-        book.setAuthor(req.getAuthor());
-        book.setPublisher(req.getPublisher());
-        book.setIsbn(finalIsbn);
-        book.setCategory(finalCategory);
+        Book book = factory.createBook(req, bookId, finalIsbn, finalCategory);
         bookRepository.save(book);
-
-        BookCopy prototype = new BookCopy();
-        prototype.setBookId(bookId);
-        prototype.setStatus("대출가능");
-        prototype.setLocation("신착도서 코너");
 
         // ── BookCopy 생성 (copyCount 수만큼) ──────────────────
         for (int i = 1; i <= finalCount; i++) {
             String copyId = generateCopyId(bookId, i);
-            BookCopy copy = prototype.copy();
-            copy.setCopyId(copyId);
-            copy.setBarcode("REQ-" + copyId);
+            BookCopy copy = factory.createCopy(bookId, copyId, i);
             bookCopyRepository.save(copy);
         }
 
