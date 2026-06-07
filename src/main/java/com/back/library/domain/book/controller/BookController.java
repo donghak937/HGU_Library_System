@@ -34,19 +34,15 @@ public class BookController {
     @GetMapping("/searchBooks")
     @ResponseBody
     public List<Book> searchBooks(@RequestParam String keyword) {
-        setSearchStrategy(keywordSearchStrategy);
-        return searchStrategy.search(keyword).stream()
-                .filter(book -> !"학위복".equals(book.getCategory()))
-                .toList();
+        setSearchStrategy(new CategoryFilterDecorator(keywordSearchStrategy, "학위복", true));
+        return searchStrategy.search(keyword);
     }
 
     @GetMapping("/searchGowns")
     @ResponseBody
     public List<Book> searchGowns(@RequestParam String keyword) {
-        setSearchStrategy(keywordSearchStrategy);
-        return searchStrategy.search(keyword).stream()
-                .filter(book -> "학위복".equals(book.getCategory()))
-                .toList();
+        setSearchStrategy(new CategoryFilterDecorator(keywordSearchStrategy, "학위복", false));
+        return searchStrategy.search(keyword);
     }
 
     @GetMapping("/searchBooksByCategory")
