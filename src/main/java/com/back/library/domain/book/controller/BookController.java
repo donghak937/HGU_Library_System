@@ -16,6 +16,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BookController {
 
+    private static final String GOWN_CATEGORY = "학위복";
+
     private final BookCopyRepository bookCopyRepository;
     private final BookRepository bookRepository;
     private final ReservationRepository reservationRepository;
@@ -34,14 +36,18 @@ public class BookController {
     @GetMapping("/searchBooks")
     @ResponseBody
     public List<Book> searchBooks(@RequestParam String keyword) {
-        setSearchStrategy(new CategoryFilterDecorator(keywordSearchStrategy, "학위복", true));
+        setSearchStrategy(new TitleSortDecorator(
+                new CategoryFilterDecorator(keywordSearchStrategy, GOWN_CATEGORY, true)
+        ));
         return searchStrategy.search(keyword);
     }
 
     @GetMapping("/searchGowns")
     @ResponseBody
     public List<Book> searchGowns(@RequestParam String keyword) {
-        setSearchStrategy(new CategoryFilterDecorator(keywordSearchStrategy, "학위복", false));
+        setSearchStrategy(new TitleSortDecorator(
+                new CategoryFilterDecorator(keywordSearchStrategy, GOWN_CATEGORY, false)
+        ));
         return searchStrategy.search(keyword);
     }
 
