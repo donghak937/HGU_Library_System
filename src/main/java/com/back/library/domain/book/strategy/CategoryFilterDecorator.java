@@ -5,7 +5,8 @@ import com.back.library.domain.book.entity.Book;
 import java.util.List;
 
 /**
- * BookSearchStrategy를 감싸서 특정 카테고리를 필터링(포함 또는 제외)하는 데커레이터 클래스
+ * BookSearchStrategy를 감싸 검색 결과를 특정 카테고리로 포함하거나 제외하는 데코레이터입니다.
+ * delegate가 다른 데코레이터일 수도 있으므로 데코레이터 체인을 만들 수 있습니다.
  */
 public class CategoryFilterDecorator implements BookSearchStrategy {
 
