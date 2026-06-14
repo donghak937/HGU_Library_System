@@ -1,10 +1,10 @@
 package com.back.library.domain.book.service;
 
-import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.BookRequest;
 import com.back.library.domain.book.factory.LibraryItemFactory;
 import com.back.library.domain.book.factory.LibraryItemFactoryProvider;
+import com.back.library.domain.book.factory.LibraryItemSet;
 import com.back.library.domain.book.repository.BookCopyRepository;
 import com.back.library.domain.book.repository.BookRepository;
 import com.back.library.domain.book.repository.BookRequestRepository;
@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -111,17 +112,15 @@ public class BookRequestService {
 
         LibraryItemFactory factory = libraryItemFactoryProvider.getFactory(finalCategory);
 
-        // ── Book 생성 ──────────────────────────────────────────
         String bookId = generateBookId();
-        Book book = factory.createBook(req, bookId, finalIsbn, finalCategory);
-        bookRepository.save(book);
-
-        // ── BookCopy 생성 (copyCount 수만큼) ──────────────────
+        List<String> copyIds = new ArrayList<>();
         for (int i = 1; i <= finalCount; i++) {
-            String copyId = generateCopyId(bookId, i);
-            BookCopy copy = factory.createCopy(bookId, copyId, i);
-            bookCopyRepository.save(copy);
+            copyIds.add(generateCopyId(bookId, i));
         }
+
+        LibraryItemSet itemSet = factory.createItemSet(req, bookId, finalIsbn, finalCategory, copyIds);
+        bookRepository.save(itemSet.getBook());
+        bookCopyRepository.saveAll(itemSet.getCopies());
 
         // ── 요청 상태 ADDED로 변경 ─────────────────────────────
         req.setStatus("ADDED");

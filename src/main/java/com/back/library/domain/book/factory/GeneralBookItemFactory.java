@@ -5,8 +5,23 @@ import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.BookRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class GeneralBookItemFactory implements LibraryItemFactory {
+
+    @Override
+    public LibraryItemSet createItemSet(BookRequest request, String bookId, String isbn, String category, List<String> copyIds) {
+        Book book = createBook(request, bookId, isbn, category);
+        List<BookCopy> copies = new ArrayList<>();
+
+        for (int i = 0; i < copyIds.size(); i++) {
+            copies.add(createCopy(bookId, copyIds.get(i), i + 1));
+        }
+
+        return new LibraryItemSet(book, copies);
+    }
 
     @Override
     public Book createBook(BookRequest request, String bookId, String isbn, String category) {
