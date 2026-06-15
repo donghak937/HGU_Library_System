@@ -39,8 +39,8 @@ public class GeneralBookItemFactory implements LibraryItemFactory {
     public BookCopy createCopy(String bookId, String copyId, int sequence) {
         BookCopy prototype = new BookCopy();
         prototype.setBookId(bookId);
-        prototype.setStatus("대출가능");
-        prototype.setLocation("신착도서 코너");
+        prototype.setStatus("\uB300\uCD9C\uAC00\uB2A5");
+        prototype.setLocation("\uC2E0\uCC29\uB3C4\uC11C \uCF54\uB108");
 
         BookCopy copy = prototype.copy();
         copy.setCopyId(copyId);

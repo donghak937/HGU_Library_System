@@ -1,5 +1,6 @@
 package com.back.library.domain.book.service;
 
+import com.back.library.domain.book.entity.Book;
 import com.back.library.domain.book.entity.BookCopy;
 import com.back.library.domain.book.entity.BookRequest;
 import com.back.library.domain.book.factory.LibraryItemFactory;

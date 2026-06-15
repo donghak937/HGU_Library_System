@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LibraryItemFactoryProvider {
 
-    private static final String GOWN_CATEGORY = "학위복";
+    private static final String GOWN_CATEGORY = "\uD559\uC704\uBCF5";
 
     private final GeneralBookItemFactory generalBookItemFactory;
     private final GraduationGownItemFactory graduationGownItemFactory;

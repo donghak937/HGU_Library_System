@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class GraduationGownItemFactory implements LibraryItemFactory {
 
-    private static final String GOWN_CATEGORY = "학위복";
+    private static final String GOWN_CATEGORY = "\uD559\uC704\uBCF5";
 
     @Override
     public LibraryItemSet createItemSet(BookRequest request, String bookId, String isbn, String category, List<String> copyIds) {
@@ -41,8 +41,8 @@ public class GraduationGownItemFactory implements LibraryItemFactory {
     public BookCopy createCopy(String bookId, String copyId, int sequence) {
         BookCopy prototype = new BookCopy();
         prototype.setBookId(bookId);
-        prototype.setStatus("대출가능");
-        prototype.setLocation("학위복 보관실");
+        prototype.setStatus("\uB300\uCD9C\uAC00\uB2A5");
+        prototype.setLocation("\uD559\uC704\uBCF5 \uBCF4\uAD00\uC2E4");
 
         BookCopy copy = prototype.copy();
         copy.setCopyId(copyId);
